@@ -1,0 +1,16 @@
+# Render Blueprint — 무료 웹 서비스 1개 (게임 페이지 + WebSocket 서버)
+services:
+  - type: web
+    name: frostbound
+    runtime: node
+    plan: free
+    buildCommand: "echo no build needed"
+    startCommand: "node server.js"
+    healthCheckPath: /health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: ""
+      - key: MAX_CONN
+        value: "300"
+      - key: ROOM_CAP
+        value: "60"
