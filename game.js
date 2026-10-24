@@ -84,9 +84,18 @@ function monHpBound(kind, lv) { const M = CAT.mons[kind]; if (!M) return 0; retu
 function monPub(mn) { return { id: mn.id, kind: mn.kind, lv: mn.lv, x: mn.x, y: mn.y, f: mn.f, st: mn.st, hp: mn.hp, mhp: mn.mhp, ctl: mn.ctl, spi: mn.spi, by: mn.by } }
 function pickHost(room) { const r = R.get(room), set = X.rooms.get(room); if (!r) return; const cand = set ? [...set].filter(o => o.ws).sort((a, b) => (a.joinT || 0) - (b.joinT || 0)) : []; const h = cand[0] ? cand[0].id : null;
   if (h !== r.host) { r.host = h; X.bcast(room, { t: 'host', id: h }); for (const mn of r.mons.values()) if (!set || ![...set].some(o => o.id === mn.ctl && o.ws)) { mn.ctl = h; X.bcast(room, { t: 'mctl', id: mn.id, ctl: h }) } } }
-function onJoinRoom(s, room) { s.joinT = Date.now(); if (!shared(room)) return; const r = RS(room); if (!r.host || !X.sessions.get(r.host) || !X.sessions.get(r.host).ws) r.host = null; if (!r.host) r.host = s.id;
+/* 구역 주인(NPC 움직임 기준): 그 구역에 가장 먼저 들어와 있는 접속자. 주인이 보낸 NPC 상태·대화를 나머지에게 그대로 전한다 */
+const RH = new Map(); // room → sid
+function roomHostCalc(room) { const set = X.rooms.get(room); const cand = set ? [...set].filter(o => o.ws).sort((a, b) => (a.joinT || 0) - (b.joinT || 0)) : []; return cand[0] ? cand[0].id : null }
+function roomHostSync(room, toS) { const h = roomHostCalc(room), was = RH.get(room); if (h) RH.set(room, h); else RH.delete(room); if (h !== was) X.bcast(room, { t: 'rhost', room, id: h }); else if (toS) send(toS, { t: 'rhost', room, id: h }) }
+function onNpcs(s, m) { if (!s.room || RH.get(s.room) !== s.id) return; const l = Array.isArray(m.l) ? m.l.slice(0, 400) : []; const out = [];
+  for (const a of l) { if (!Array.isArray(a)) continue; const id = X.str(String(a[0]), 40), x = X.num(a[1], 0, 400), y = X.num(a[2], 0, 400); if (!id || x === null || y === null) continue; out.push([id, x, y, a[3] === -1 ? -1 : 1, a[4] ? 1 : 0, X.str(String(a[5] || ''), 16), X.str(String(a[6] || ''), 16), a[7] ? 1 : 0]) }
+  if (out.length) X.bcast(s.room, { t: 'npcs', full: !!m.full, l: out }, s) }
+function onNchat(s, m) { if (!s.room || RH.get(s.room) !== s.id) return; const lines = (Array.isArray(m.lines) ? m.lines : []).slice(0, 8).map(x => X.str(String(x), 120)).filter(Boolean); if (!lines.length) return;
+  X.bcast(s.room, { t: 'nchat', a: X.str(String(m.a), 40), b: X.str(String(m.b), 40), lines, dur: X.num(m.dur, 1, 60) || 9 }, s) }
+function onJoinRoom(s, room, same) { s.joinT = same && s.joinT ? s.joinT : Date.now(); roomHostSync(room, s); if (!shared(room)) return; const r = RS(room); if (!r.host || !X.sessions.get(r.host) || !X.sessions.get(r.host).ws) r.host = null; if (!r.host) r.host = s.id;
   send(s, { t: 'mlist', room, host: r.host, mons: [...r.mons.values()].filter(x => x.alive).map(monPub) }) }
-function onLeaveRoom(s, room) { if (!shared(room)) return; const r = R.get(room); if (!r) return; const set = X.rooms.get(room); if (!set || ![...set].some(o => o.ws)) { R.delete(room); return }
+function onLeaveRoom(s, room) { roomHostSync(room); if (!shared(room)) return; const r = R.get(room); if (!r) return; const set = X.rooms.get(room); if (!set || ![...set].some(o => o.ws)) { R.delete(room); return }
   for (const mn of r.mons.values()) if (mn.ctl === s.id) mn.ctl = null; pickHost(room); const h = R.get(room) && R.get(room).host; for (const mn of r.mons.values()) if (!mn.ctl) { mn.ctl = h; X.bcast(room, { t: 'mctl', id: mn.id, ctl: h }) } }
 function onMadd(s, m) { if (!shared(s.room)) return; const r = RS(s.room); const list = Array.isArray(m.list) ? m.list.slice(0, 40) : []; const ok = [];
   for (const a of list) { if (r.mons.size >= CFG.ROOM_MONS) break; const kind = X.str(a.kind, 30), M = CAT.mons[kind]; if (!M) continue; const lv = clampInt(a.lv, 1, 80) || M.lv; const mhp = clampInt(a.mhp, 1, 1e7);
@@ -178,10 +187,10 @@ setInterval(() => { const now = Date.now(); for (const T of trades.values()) if 
 function onDisconnect(s) { const T = tradeOf(s); if (T) tEnd(T, `${s.nm} 님의 연결이 끊겨 거래를 취소했다`, s.id); const P = partyOf(s); if (P) partyPush(P) }
 function onGone(s) { const P = partyOf(s); if (P) partyRemove(s, 'gone') }
 function onHello(s) { const P = partyOf(s); if (P) partyPush(P) }
-const LIM = { eq: [6, 3000], party: [10, 5000], hp: [8, 1000], madd: [20, 1000], mpos: [12, 1000], mhit: [25, 1000], mgone: [40, 1000], mtake: [10, 1000], pick: [20, 1000], qshare: [8, 5000], qresp: [10, 5000], trade: [20, 3000] };
+const LIM = { eq: [6, 3000], party: [10, 5000], hp: [8, 1000], madd: [20, 1000], mpos: [12, 1000], mhit: [25, 1000], mgone: [40, 1000], mtake: [10, 1000], pick: [20, 1000], qshare: [8, 5000], qresp: [10, 5000], trade: [20, 3000], npcs: [12, 1000], nchat: [6, 1000] };
 function handle(s, m) { switch (m.t) {
   case 'eq': onEq(s, m); return true; case 'party': onParty(s, m); return true; case 'hp': onHp(s, m); return true;
   case 'madd': onMadd(s, m); return true; case 'mpos': onMpos(s, m); return true; case 'mhit': onMhit(s, m); return true; case 'mgone': onMgone(s, m); return true; case 'mtake': onMtake(s, m); return true; case 'pick': onPick(s, m); return true;
-  case 'qshare': onQshare(s, m); return true; case 'qresp': onQresp(s, m); return true; case 'trade': onTrade(s, m); return true } return false }
+  case 'qshare': onQshare(s, m); return true; case 'qresp': onQresp(s, m); return true; case 'trade': onTrade(s, m); return true; case 'npcs': onNpcs(s, m); return true; case 'nchat': onNchat(s, m); return true } return false }
 function pubExtra(s) { return { eq: s.eq || null, party: s.party || null } }
 module.exports = { init: x => { X = x }, handle, LIM, onJoinRoom, onLeaveRoom, onDisconnect, onGone, onHello, pubExtra, CFG, _state: { parties, trades, R, pendLoot } };

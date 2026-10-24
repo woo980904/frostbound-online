@@ -28,7 +28,7 @@ function pub(s) { return { id: s.id, nm: s.nm, lv: s.lv, race: s.race, cls: s.cl
 function roomOf(name) { let r = rooms.get(name); if (!r) { r = new Set(); rooms.set(name, r) } return r }
 function bcast(room, msg, except) { const r = rooms.get(room); if (!r) return; const data = JSON.stringify(msg); for (const s of r) if (s !== except && s.ws) s.ws.sendText(data) }
 function leaveRoom(s, why) { if (!s.room) return; const room = s.room, r = rooms.get(room); if (r) { r.delete(s); bcast(room, { t: 'pleave', id: s.id, why }); if (!r.size) rooms.delete(room) } s.room = null; G.onLeaveRoom(s, room) }
-function joinRoom(s, room) { if (s.room === room) { const r = rooms.get(room); s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: r ? [...r].filter(o => o !== s).map(pub) : [] })); G.onJoinRoom(s, room); return true } /* 같은 구역을 다시 불러온 경우: 목록을 다시 보내 맞춘다 */ const r = roomOf(room); if (r.size >= ROOM_CAP) { if (!r.size) rooms.delete(room); return false } leaveRoom(s, 'move'); s.room = room; r.add(s);
+function joinRoom(s, room) { if (s.room === room) { const r = rooms.get(room); s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: r ? [...r].filter(o => o !== s).map(pub) : [] })); G.onJoinRoom(s, room, true); return true } /* 같은 구역을 다시 불러온 경우: 목록을 다시 보내 맞춘다 */ const r = roomOf(room); if (r.size >= ROOM_CAP) { if (!r.size) rooms.delete(room); return false } leaveRoom(s, 'move'); s.room = room; r.add(s);
   s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: [...r].filter(o => o !== s).map(pub) })); bcast(room, { t: 'pjoin', p: pub(s) }, s); G.onJoinRoom(s, room); return true }
 function counts() { let online = 0; for (const s of sessions.values()) if (s.ws) online++; return online }
 
