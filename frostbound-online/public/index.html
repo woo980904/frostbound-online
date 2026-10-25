@@ -7124,7 +7124,7 @@ function updateHUD() {
   // 버프·상태
   const bf = [];
   const BN = { fortune: '점괘', spec_imperial: '시계탑의 정확함', spec_orcland: '전쟁 북의 고동', spec_elfwood: '별빛의 인도', spec_dwarfmine: '증기 기관의 박동', rage: '광폭화', resolve: '결의', tuneAtk: '완전 정비·공격', tuneDef: '완전 정비·방어', shout: '함성', bless: '축복', tbless: '신전 축복', wind: '바람 걸음', coat: '독 바르기', engrave: '룬 각인', trace: '흔적 추적', skin: '강철 피부', overclock: '과부하', evadeAtk: '잔상', immunePoison: '해독', holywater: '성수', frostward: '서리 방호', tonic: '강장제', torch: '횃불', drone: '정비 드론', p_aegis: '신성 방벽' };
-  for (const [k, b] of Object.entries(S.buffs)) if (b && b.t > 0) bf.push(`<span class="buff ${/tune/.test(k) ? 'tune' : ''}">${BN[k] || SKILLS[k]?.name || k} ${b.t > 60 ? fmtTime(b.t) : Math.ceil(b.t) + 's'}</span>`);
+  for (const [k, b] of Object.entries(S.buffs)) if (b && b.t > 0) bf.push(`<span class="buff ${/tune/.test(k) ? 'tune' : ''}">${BN[k] || (window.BUFF_KO18 || {})[k] || SKILLS[k]?.name || k} ${b.t > 60 ? fmtTime(b.t) : Math.ceil(b.t) + 's'}</span>`);
   if (S.food && S.food.t > 0) bf.push(`<span class="buff food">${ITEMS[S.food.id].name} ${fmtTime(S.food.t)}</span>`);
   for (const [k, s] of Object.entries(S.status)) if (s.t > 0) bf.push(`<span class="buff bad">${STATUS_KO[k]} ${Math.ceil(s.t)}s</span>`);
   if (W.p.shield > 0) bf.push(`<span class="buff">보호막 ${Math.round(W.p.shield)}</span>`);
@@ -13212,6 +13212,38 @@ const _basicPose18s = basicPose; basicPose = function (p) { const wi = weaponInf
     if (o && o.weapon === 'gauntlet') o = Object.assign({}, o, { weapon: null, glove18: o.wCol || '#b8bec6', gloveGlow18: o.wGlow || null, wParts: null });
     else if (o && o.sheathW18 && o.sheathW18.w === 'gauntlet') o = Object.assign({}, o, { glove18: o.sheathW18.col || '#b8bec6', sheathW18: Object.assign({}, o.sheathW18, { w: null }) });
     return _dh(c, x, y, o) } }
+/* ---- 18차-20: 창·건틀릿 기술 확장 ---- */
+// 창: 기술 갈래 3·4단계, 직업 특기(견습 모험가·성기사·도적), 공용
+WS('spear', '기술', 3, 'ws_sp_flurry', '연속 찌르기', 'active', { mp: 8, sta: 18, cd: 6, pose: 'thrust', eff: { k: 'melee', mult: R3w(.75, 1.05), hits: 3, arc: 28, range: 2.6 } }, '창끝으로 세 번 빠르게 찔러 타당 {mult}배 피해. 긴 리치 그대로.');
+WS('spear', '기술', 4, 'ws_sp_whirl', '회전 창격', 'active', { mp: 12, sta: 24, cd: 9, pose: 'spin', eff: { k: 'aoeS', mult: R3w(1.5, 2.1), r: 2.7, mode: 'melee', knock: 1.2 } }, '창을 크게 돌려 주변 2.7칸에 {mult}배 피해와 밀쳐내기. 둘러싸였을 때 빠져나온다.');
+WS('spear', '기술', 5, 'ws_sp_javelin', '투창', 'active', { mp: 10, cd: 8, pose: 'throw', eff: { k: 'proj', mult: R3w(1.7, 2.4), spd: 16, range: 8.5, mode: 'melee', el: 'physical', pierce: true, knock: .6 } }, '창을 던져 일직선으로 꿰뚫으며 {mult}배 피해. (손에서 놓지 않는 기술용 예비 창)');
+CS('spear', 1, ['novice'], 'wc_sp_nov', '견제 찌르기', 'active', { mp: 4, sta: 8, cd: 3, pose: 'thrust', eff: { k: 'melee', mult: R3w(1.3, 1.7), arc: 30, range: 2.8, knock: 1 } }, '[견습] 다가오는 적을 끝으로 밀어내며 {mult}배 피해. 거리를 벌린다.');
+CS('spear', 1, ['paladin'], 'wc_sp_pal', '성창 낙인', 'active', { mp: 14, cd: 9, pose: 'thrust', eff: { k: 'cone', mult: R3w(1.8, 2.5), arc: 30, r: 3.2, el: 'holy', mode: 'melee', stun: .6 } }, '[성기사] 빛을 실은 찌르기로 일직선 {mult}배 신성 피해와 경직.');
+// 건틀릿: 기술 갈래 3~5단계, 공용(건틀릿·단검), 직업 특기(견습·전사·도적·격투가)
+WS('gauntlet', '기술', 3, 'ws_gt_hook', '회전 훅', 'active', { mp: 8, sta: 18, cd: 6, pose: 'spin', eff: { k: 'aoeS', mult: R3w(1.3, 1.8), r: 1.8, mode: 'melee', knock: .8 } }, '몸을 돌려 주변을 후려쳐 {mult}배 피해와 밀쳐내기.');
+WS('gauntlet', '기술', 4, 'ws_gt_palm', '기공 장타', 'active', { mp: 10, cd: 7, pose: 'thrust', eff: { k: 'proj', mult: R3w(1.8, 2.5), spd: 12, range: 4.5, mode: 'melee', el: 'physical', pierce: true, knock: 1.4 } }, '손바닥으로 기를 밀어내 앞쪽 4.5칸을 꿰뚫으며 {mult}배 피해. 짧은 리치를 보완한다.');
+WS('gauntlet', '기술', 5, 'ws_gt_guard', '받아치기 자세', 'active', { mp: 8, cd: 14, pose: 'roar', eff: { k: 'buff', id: 'gtguard', dur: 6, mods: { counterReflect: R3w(.5, .9), defMul: 1.15, aspdAdd: R3w(.1, .2) } } }, '6초간 방어력 1.15배, 받은 피해의 {counterReflect}배를 되돌리고 공격 속도 +{aspdAdd}.');
+WSHARE(['gauntlet', 'dagger'], 0, 'wx_combo', '연격 마무리', 'active', { mp: 6, sta: 14, cd: 5, pose: 'thrust', eff: { k: 'melee', mult: R3w(.7, .95), hits: 3, arc: 80, range: 1.4, stun: .3 } }, '[건틀릿·단검] 세 번 몰아쳐 타당 {mult}배 피해, 마지막 일격에 경직.');
+CS('gauntlet', 1, ['novice'], 'wc_gt_nov', '기본기 연타', 'active', { mp: 4, sta: 10, cd: 3, pose: 'thrust', eff: { k: 'melee', mult: R3w(.6, .8), hits: 4, arc: 70, range: 1.3 } }, '[견습] 네 번 연달아 쳐 타당 {mult}배 피해.');
+CS('gauntlet', 1, ['warrior'], 'wc_gt_war', '철권 강타', 'active', { mp: 10, sta: 20, cd: 9, pose: 'thrust', eff: { k: 'melee', mult: R3w(2.6, 3.4), arc: 50, range: 1.3, stun: R3w(.8, 1.3), knock: 1.6 } }, '[전사] 체중을 실은 한 방 {mult}배, 기절과 크게 밀쳐내기.');
+CS('gauntlet', 1, ['rogue'], 'wc_gt_rog', '급소 타격', 'active', { mp: 8, cd: 8, pose: 'thrust', eff: { k: 'melee', mult: R3w(2.4, 3.2), arc: 45, range: 1.2, back: true, status: { t: 'bleed', d: 4, p: .5 } } }, '[도적] 급소를 노려 {mult}배 피해와 출혈. 등 뒤에서 치면 더 아프다.');
+CS('gauntlet', 1, ['brawler'], 'wc_gt_brw', '천붕격', 'active', { mp: 16, sta: 26, cd: 12, pose: 'slam', eff: { k: 'aoeT', mult: R3w(2.2, 3), r: 2, delay: .35, maxR: 2.2, mode: 'melee', stun: 1.2 } }, '[격투가] 땅을 내리쳐 반경 2칸 {mult}배 피해와 기절.');
+for (const wt of ['spear', 'gauntlet', 'dagger']) { const T = TREES['wpn_' + wt]; if (T) T.branches = ['기술', '공용', '직업 특기'].filter(b => T.list.some(i => SKILLS[i].branch === b)) }
+for (const id of Object.keys(SKILLS)) if (SKILLS[id].wts && !WPN_SKILL_IDS.includes(id)) WPN_SKILL_IDS.push(id);
+/* 아이콘 */
+SKILL_ART.ws_sp_flurry = c => { c.strokeStyle = '#8a6a3a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-14, 12); c.lineTo(8, -8); c.stroke(); c.fillStyle = '#d8dce2'; for (const [x, y] of [[8, -8], [13, -3], [3, -13]]) { c.beginPath(); c.moveTo(x, y); c.lineTo(x + 6, y - 6); c.lineTo(x + 1, y - 1); c.fill() } };
+SKILL_ART.ws_sp_whirl = c => { G.swirl(c, 0, 0, 15, 1.3, '#ffd080', 2); c.strokeStyle = '#8a6a3a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-12, 10); c.lineTo(12, -10); c.stroke() };
+SKILL_ART.ws_sp_javelin = c => { c.strokeStyle = '#8a6a3a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-16, 8); c.lineTo(10, -4); c.stroke(); c.fillStyle = '#d8dce2'; c.beginPath(); c.moveTo(10, -9); c.lineTo(18, -7); c.lineTo(11, 0); c.fill(); c.strokeStyle = 'rgba(255,240,200,.6)'; c.lineWidth = 1; for (const y of [2, 7, 12]) { c.beginPath(); c.moveTo(-18, y); c.lineTo(-8, y - 4); c.stroke() } };
+SKILL_ART.wc_sp_nov = c => { c.strokeStyle = '#8a6a3a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-14, 6); c.lineTo(8, 0); c.stroke(); c.fillStyle = '#d8dce2'; c.beginPath(); c.moveTo(8, -4); c.lineTo(16, 0); c.lineTo(8, 4); c.fill(); G.burst(c, 16, 0, 6, '#ffe0a0', 6) };
+SKILL_ART.wc_sp_pal = c => { c.fillStyle = 'rgba(255,240,160,.4)'; c.fillRect(-16, -4, 32, 8); c.strokeStyle = '#c8a050'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-14, 4); c.lineTo(8, -2); c.stroke(); G.cross(c, 12, -4, .5, '#ffe9a0') };
+SKILL_ART.ws_gt_hook = c => { G.swirl(c, 0, 2, 14, 1.2, '#ffb060', 2); fistGlyph18(c, 6, -6, .8) };
+SKILL_ART.ws_gt_palm = c => { c.fillStyle = 'rgba(160,220,255,.45)'; c.beginPath(); c.ellipse(6, 0, 12, 7, 0, 0, 7); c.fill(); fistGlyph18(c, -8, 2, .85, '#d8dce2') };
+SKILL_ART.ws_gt_guard = c => { G.shield(c, 0, 2, .9, '#c8a070'); fistGlyph18(c, 6, 6, .6) };
+SKILL_ART.wx_combo = c => { fistGlyph18(c, -6, 4, .7); c.save(); c.translate(8, -6); c.rotate(-.8); c.fillStyle = '#d8dce2'; c.fillRect(-1.5, -10, 3, 14); c.restore(); G.star(c, 0, -12, 4, 5, '#ffe0a0') };
+SKILL_ART.wc_gt_nov = c => { for (const [x, y] of [[-8, 6], [0, -2], [8, 6]]) fistGlyph18(c, x, y, .55) };
+SKILL_ART.wc_gt_war = c => { fistGlyph18(c, 0, 2, 1.25, '#9aa0a8'); G.burst(c, 10, -8, 7, '#ffd070', 8) };
+SKILL_ART.wc_gt_rog = c => { fistGlyph18(c, -2, 2, 1, '#5a5060'); c.fillStyle = '#c03030'; c.beginPath(); c.arc(10, -8, 3, 0, 7); c.fill() };
+SKILL_ART.wc_gt_brw = c => { c.fillStyle = '#7a5a3a'; c.fillRect(-16, 8, 32, 5); G.burst(c, 0, 6, 12, '#ffb060', 10); c.save(); c.rotate(Math.PI); fistGlyph18(c, 0, 4, 1); c.restore() };
 
 /* =====================================================================
    18차-16: 포탑 확장 (전투 기술자 「포탑」 갈래 새로 추가)
@@ -13407,6 +13439,43 @@ setInterval(() => { try { if (!W || !S || UI.screen !== 'game') return; if (UI.p
 /* 서버 메시지 */
 const _wsOn18pm = wsOn18; wsOn18 = function (m) { _wsOn18pm(m); if (m && m.t === 'ppos') { const now = Date.now(); for (const a of m.l) PM18.pos[a[0]] = { z: a[1], x: a[2], y: a[3], t: now } } };
 if (typeof window !== 'undefined' && window.__fb) Object.assign(window.__fb, { PM18, pmMates18 });
+
+/* =====================================================================
+   18차-20: 종족 균형 · 종족 패시브 · 마을 안 기력 무소모
+   · 이동속도: 엘프 2배 → 1.3배, 오크 1.0 → 1.15배
+   · 체력: 엘프 0.85배(대신 마나 회복 패시브), 오크 1.5 → 1.7배 + 체력 재생 패시브
+   · 종족마다 늘 켜져 있는 패시브(능력치 보정) + 조건이 되면 저절로 발동하는 효과(재사용 대기)
+   · 마을 안: 달리기·구르기(Space)·회피/방어 동작(C)·스킬 모두 기력을 쓰지 않는다
+   ===================================================================== */
+RACES.elf.mult.spd = 1.3; RACES.elf.mult.hp = .85; RACES.orc.mult.spd = 1.15; RACES.orc.mult.hp = 1.7;
+RACES.elf.traits = RACES.elf.traits.map(t => /이동속도 2배/.test(t) ? '이동속도 1.3배 (가볍고 빠르다) · 최대 체력 0.85배' : t);
+RACES.orc.traits = RACES.orc.traits.map(t => /최대 체력 1.5배/.test(t) ? '최대 체력 1.7배 (능력치 기반 부분) · 이동속도 1.15배' : t);
+const RPASS18 = {
+  human: { ko: '단련된 기사도', mods: () => ({ defPct: .06, staRegenPct: .15, healPct: .15 }), desc: '방어력 +6% · 기력 회복 +15% · 회복 효과 +15%' },
+  orc: { ko: '피의 맥동', mods: () => ({ hpRegen: 1 + S.level * .3 }), desc: '초당 체력 재생 (레벨에 비례)', proc: { ko: '불굴의 피', cd: 180, desc: '체력이 30% 아래로 떨어지면 5초 동안 최대 체력의 50%를 급속 재생 (재사용 3분)' } },
+  elf: { ko: '숲의 숨결', mods: () => ({ mpRegenPct: .6, mpPct: .1 }), desc: '마나 회복 +60% · 최대 마나 +10%', proc: { ko: '달샘', cd: 120, desc: '마나가 25% 아래로 떨어지면 8초 동안 마나 회복 5배 (재사용 2분)' } },
+  dwarf: { ko: '강철 피부', mods: () => ({ defPct: .12, resistAdd: .08 }), desc: '방어력 +12% · 상태 이상 저항 +8%' },
+  beast: { ko: '야성의 감각', mods: () => ({ critAdd: .05, spdPct: .05 }), desc: '치명타 +5% · 이동속도 +5% · 적을 쓰러뜨릴 때마다 체력 3% 회복' },
+  salamander: { ko: '재생 비늘', mods: () => ({ resistAdd: .1 }), desc: '상태 이상 저항 +10% · 4초 동안 맞지 않으면 체력 재생 2배' } };
+for (const [r, P] of Object.entries(RPASS18)) if (RACES[r] && !RACES[r].traits.some(t => t.includes(P.ko))) { RACES[r].traits.push(`종족 패시브 「${P.ko}」: ${P.desc}`); if (P.proc) RACES[r].traits.push(`종족 패시브 「${P.proc.ko}」: ${P.proc.desc}`) }
+const _passiveMods18r = passiveMods; passiveMods = function () { const o = _passiveMods18r.apply(this, arguments); try { const P = S && RPASS18[S.race]; if (P) for (const [k, v] of Object.entries(P.mods())) o[k] = (o[k] || 0) + v;
+    if (S && S.race === 'salamander' && W && W.p && W.p.lastHit > 4) o.hpRegen = (o.hpRegen || 0) + 1.5 + S.level * .15 } catch (e) { } return o };
+/* 조건 발동 패시브 */
+function rprocTick18(dt) { if (!S || !W || !W.p || S.hp <= 0) return; const R = S.rp18 = S.rp18 || {}, now = S.time, P = RPASS18[S.race]; if (!P || !P.proc) return;
+  if ((R.next || 0) > now) return;
+  if (S.race === 'orc' && S.hp < ST.hp * .3) { R.next = now + P.proc.cd; S.buffs.orcblood18 = { t: 5, mods: {}, heal18: ST.hp * .5 / 5 }; toast('불굴의 피 — 상처가 빠르게 아문다!'); log('[종족] 불굴의 피 발동: 5초 동안 체력 50% 재생', 'g'); sfx('heal'); fx.push({ type: 'ring', x: W.p.x, y: W.p.y, t: 0, r: 1.3, c: '#ff6050' }) }
+  if (S.race === 'elf' && S.mp < ST.mp * .25) { R.next = now + P.proc.cd; S.buffs.moonwell18 = { t: 8, mods: { mpRegenPct: 4 } }; toast('달샘 — 마나가 샘솟는다!'); log('[종족] 달샘 발동: 8초 동안 마나 회복 5배', 'g'); sfx('buff'); fx.push({ type: 'ring', x: W.p.x, y: W.p.y, t: 0, r: 1.3, c: '#9fc8ff' }) } }
+const _update18r = update; update = function (dt) { const r = _update18r(dt); try { if (!W || !S) return r;
+    // 마을 안에서는 기력을 쓰지 않는다 (구르기·회피·스킬·달리기 모두) — 늘 가득 채워 둔다
+    if (W.kind === 'town' && ST) { S.sta = ST.sta; if (W.p) W.p.staDelay = 0 }
+    const b = S.buffs.orcblood18; if (b && b.t > 0 && S.hp > 0) { S.hp = Math.min(ST.hp, S.hp + b.heal18 * dt); W.orcFx18 = (W.orcFx18 || 0) - dt; if (W.orcFx18 <= 0) { W.orcFx18 = .5; fx.push({ type: 'text', x: W.p.x, y: W.p.y - .4, t: 0, txt: '+' + Math.round(b.heal18 * .5), c: '#8fe09a', small: true }) } }
+    rprocTick18(dt) } catch (e) { } return r };
+/* 마을에서는 기력이 모자라 막히는 일이 없게: 행동 직전에도 채운다 */
+for (const fn of ['dodge', 'startDefend', 'useSkill', 'useSkillEq']) { const orig = window[fn]; if (typeof orig !== 'function') continue; window[fn] = function () { if (W && W.kind === 'town' && ST) S.sta = ST.sta; const r = orig.apply(this, arguments); if (W && W.kind === 'town' && ST) S.sta = ST.sta; return r } }
+/* 수인: 처치할 때마다 체력 3% */
+const _emit18r = emit; emit = function (t, k, ex) { const r = _emit18r.apply(this, arguments); try { if (t === 'kill' && S && S.race === 'beast' && S.hp > 0) S.hp = Math.min(ST.hp, S.hp + ST.hp * .03) } catch (e) { } return r };
+/* 버프 표시 이름 */
+window.BUFF_KO18 = Object.assign(window.BUFF_KO18 || {}, { orcblood18: '불굴의 피', moonwell18: '달샘', turret18: '고무 포탑', gtguard: '받아치기 자세' });
 
 </script>
 </body></html>
