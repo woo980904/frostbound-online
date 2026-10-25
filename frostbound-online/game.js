@@ -70,6 +70,9 @@ function onParty(s, m) { const P = partyOf(s);
     case 'disband': { if (!P || P.leader !== s.id) return err(s, 'party', '파티장만 해산할 수 있다'); for (const sid of P.members) { const o = X.sessions.get(sid); if (o) { o.party = null; send(o, { t: 'party', party: null, why: 'disband' }) } } parties.delete(P.id); return }
     case 'leader': { if (!P || P.leader !== s.id) return; const o = X.sessions.get(X.str(m.id, 20)); if (!o || o.party !== P.id) return; P.leader = o.id; partyPush(P); return }
     default: return err(s, 'party', '모르는 파티 명령') } }
+/* 파티원 위치: 1초마다 같은 파티에게 (구역 · 좌표) — 대륙 지도에는 지역, 같은 구역 지도에는 정확한 위치 */
+setInterval(() => { for (const P of parties.values()) { const l = []; for (const sid of P.members) { const o = X.sessions.get(sid); if (o && o.ws && o.room) l.push([o.id, o.room, Math.round(o.x * 10) / 10, Math.round(o.y * 10) / 10]) }
+    if (!l.length) continue; const data = { t: 'ppos', l }; for (const sid of P.members) send(X.sessions.get(sid), data) } }, 1000);
 function onHp(s, m) { const hp = clampInt(m.hp, 0, 1e7), mhp = clampInt(m.mhp, 1, 1e7); if (hp === null || mhp === null) return; s.hp = Math.min(hp, mhp); s.mhp = mhp; s.alive = s.hp > 0; const P = partyOf(s); if (!P) return;
   for (const sid of P.members) if (sid !== s.id) send(X.sessions.get(sid), { t: 'php', id: s.id, hp: s.hp, mhp, alive: s.alive }) }
 setInterval(() => { const now = Date.now(); for (const P of parties.values()) for (const [sid, exp] of P.invites) if (now > exp) { P.invites.delete(sid); send(X.sessions.get(sid), { t: 'pinv_x', pid: P.id }); send(X.sessions.get(P.leader), { t: 'info', msg: '파티 초대가 만료되었다' }) } }, 2000);
