@@ -1,2 +1,0 @@
-# frostbound-online
-frostbound-online
