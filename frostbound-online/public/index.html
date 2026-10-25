@@ -384,6 +384,37 @@ details summary{cursor:pointer;color:#bfe2f0}
 #s-title .t-main,#s-title .t-sub,#s-title .t-ko,#s-title .t-eyebrow{text-shadow:0 2px 10px rgba(0,0,0,.55),0 0 2px rgba(0,0,0,.6)}
 #s-title .t-lore{color:#eef2f4;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 @media (min-height:620px){#s-title>div{transform:translateY(-13vh)}}
+/* 18차-14 멀티플레이 2차: 파티 창 · 거래 창 */
+#party18{position:absolute;left:calc(10px + env(safe-area-inset-left,0px));top:330px;width:280px;box-sizing:border-box;padding:6px 8px;font-size:12px;pointer-events:auto;z-index:6}
+#party18 .ph18{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+#party18 .pm18{display:flex;gap:6px;align-items:center;padding:3px 0;border-top:1px solid rgba(255,255,255,.06)}#party18 .pm18.off{opacity:.55}
+#party18 .pm18 img{width:44px;height:44px;background:#0c131c;border:1px solid var(--edge);border-radius:4px;flex:none}
+#party18 .pmi{flex:1;min-width:0;line-height:1.35}
+#party18 .dot18{display:inline-block;width:7px;height:7px;border-radius:50%;background:#666;margin-right:4px}#party18 .dot18.on{background:#5fd27a}
+#party18 .hpb18{position:relative;height:11px;background:#2a1414;border:1px solid #000;border-radius:2px;margin-top:2px}#party18 .hpb18 i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#d24a3a,#8a2a20)}#party18 .hpb18 span{position:relative;font-size:9.5px;line-height:11px;display:block;text-align:center;color:#fff;text-shadow:0 0 2px #000}
+#party18 .pinv18{background:rgba(80,120,170,.18);border:1px solid rgba(120,170,230,.45);border-radius:4px;padding:4px 6px;margin-bottom:4px}
+#party18 .pset18{margin:4px 0}#online .np18{white-space:nowrap;margin-right:4px}
+#trade18{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,94vw);max-height:84vh;overflow:auto;box-sizing:border-box;padding:10px 12px;z-index:30;pointer-events:auto;font-size:13px}
+#trade18 .th18{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+#trade18 .tc18{display:grid;grid-template-columns:1fr 1fr;gap:8px}#trade18 .tside18{background:rgba(0,0,0,.25);border:1px solid var(--edge);border-radius:4px;padding:6px;min-height:120px}
+#trade18 .tt18{margin-bottom:4px}#trade18 .ti18{padding:1px 0}#trade18 .tg18{margin-top:6px}#trade18 .tg18 input{width:90px;background:#0c131c;border:1px solid var(--edge);color:var(--text);padding:2px 4px}
+#trade18 .tb18{margin:8px 0;text-align:center}#trade18 .tinv18{display:flex;flex-wrap:wrap;gap:3px}#trade18 .ti18b{font-size:11px}
+@media (max-width:820px){#party18{width:200px}#trade18 .tc18{grid-template-columns:1fr}}
+/* 거래창: 상점 판매처럼 아이콘 칸 */
+#trade18{width:min(860px,96vw)}
+#trade18 .tg9{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none}
+#trade18 .tile.empty18{background:rgba(255,255,255,.02);border-style:dashed;min-height:62px;cursor:default}
+#trade18 .tile.ro18{cursor:default}
+#trade18 .tinvw18{margin-top:6px;border-top:1px solid var(--edge);padding-top:6px}
+#trade18 .tinv18{max-height:34vh;margin-top:4px}
+#trade18 .tile .why18{position:absolute;bottom:2px;left:2px;right:2px;font-size:9px;color:#e8a08a;background:rgba(0,0,0,.6);border-radius:2px}
+#trade18 .tabs.sm{display:flex;flex-wrap:wrap;gap:2px}
+/* 보스 페이즈 표시 */
+#bossbar .bph18{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:2px;font-size:11px;color:#ffe0b0;text-shadow:0 1px 2px #000}
+#bossbar .bph18 u{display:block;width:26px;height:6px;border:1px solid #6a2a24;background:#1a1010;text-decoration:none}#bossbar .bph18 u.done{background:#5a2420}#bossbar .bph18 u.on{background:#ff7050;box-shadow:0 0 6px #ff7050}
+#bossbar .bph18 em{margin-left:6px;font-style:normal;white-space:nowrap}
+#bossbar.trans18 .bb-bar i{background:linear-gradient(#ffe8a0,#d0a040);transition:width .05s}
+#banner.k-boss .b1{color:#ffb0a0;text-shadow:0 0 24px rgba(255,80,60,.6)}
 
 </style>
 <div id="app">
@@ -5719,6 +5750,7 @@ function drawWorld() {
       hpBarWanted(m, s, bars);
       if (m.dummy && W.target === m) label(c, s.x, s.y - 48, m.M.name, '#e8e0d8') }
     else if (d.k === 'summon') { const sm = d.s, s = iso(sm.x, sm.y); if (sm.kind === 'decoy') { c.globalAlpha = .55; drawHumanoid(c, s.x, s.y, Object.assign(playerLook(W.p), { t: wt })); c.globalAlpha = 1 }
+      else if (typeof drawTurret18 === 'function' && drawTurret18(c, sm, s, wt)) { }
       else { c.fillStyle = '#5a4a3a'; c.fillRect(s.x - 8, s.y - 8, 16, 8); c.fillStyle = sm.kind === 'cannon' ? '#4a4a50' : '#8a7a5a'; c.save(); c.translate(s.x, s.y - 12); c.rotate((sm.face || 0) * .3); c.fillRect(-3, -3, sm.kind === 'cannon' ? 16 : 12, 6); c.restore(); c.fillStyle = '#e0c060'; c.fillRect(s.x - 1, s.y - 18, 2, 3) } }
     else if (d.k === 'player') { const p = W.p, s = isoL(p.x, p.y); if (p.iframe > 0 || p.stealth > 0) c.globalAlpha = p.stealth > 0 ? .35 : .6;
       const L = playerLook(p), fdir = (p.face.x - p.face.y) >= 0 ? 1 : -1;
@@ -8910,7 +8942,7 @@ function netBubbles(c, s, say, em) { const now = performance.now();
 function netUi() { let el = document.getElementById('online'); if (!el) { el = document.createElement('div'); el.id = 'online'; el.className = 'frame';
     el.innerHTML = `<div class="nh"><span class="nst"></span><button class="btn xs" data-net="fold">접기</button></div><div class="nbody"><div class="nlog"></div><div class="nin"><input id="net-in" maxlength="120" placeholder="Enter로 채팅 (모든 접속자에게)" autocomplete="off"></div><div class="nem">${EMOTES.map(e => `<button class="btn xs" data-net="em" data-k="${e[0]}" title="${e[2]}">${e[1]}</button>`).join('')}</div></div>`;
     (document.getElementById('hud') || document.body).appendChild(el); el.addEventListener('click', netClick);
-    el.querySelector('#net-in').addEventListener('keydown', e => { if (e.key === 'Enter') { netSay(e.target.value); e.target.value = ''; e.target.blur(); e.preventDefault() } else if (e.key === 'Escape') e.target.blur(); e.stopPropagation() }) }
+    el.querySelector('#net-in').addEventListener('compositionend', e => { const t = e.target; if (!t._send18) return; t._send18 = false; setTimeout(() => { if (t.value.trim()) { netSay(t.value); t.value = ''; t.blur() } }, 0) }); el.querySelector('#net-in').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.isComposing || e.keyCode === 229)) { e.target._send18 = true; e.stopPropagation(); return } /* 한글 조합 중 Enter: 조합이 끝난 뒤 한 번만 보낸다 */ if (e.key === 'Enter') { netSay(e.target.value); e.target.value = ''; e.target.blur(); e.preventDefault() } else if (e.key === 'Escape') e.target.blur(); e.stopPropagation() }) }
   if (!S || UI.screen !== 'game') { el.hidden = true; return } el.hidden = false;
   const others = NET.peers.filter(p => !p.sameTab && p.presence && p.presence.nm), here = others.filter(p => W && p.presence.z === W.zone).length;
   el.querySelector('.nst').innerHTML = NET.ok ? `<b class="good">● 온라인</b> ${others.length}명${others.length ? ` · 같은 곳 ${here}명` : ' — 아직 아무도 없다'}` : NET.err === 'none' || NET.err === 'not_granted' ? '<b class="muted">○ 혼자 플레이 중</b> <span class="muted">(로그인해 이 페이지를 연 같은 조직 사람끼리만 연결)</span>' : '<b class="muted">○ 연결 중…</b>';
@@ -8984,7 +9016,7 @@ function renderCreate() {
     og('시작 장비 색', chips('wtint', LOOK_OPT.wtint)) +
     `<p class="sec-t mt">세부 조정 <span class="muted">— 머리·수염·장신구가 어긋나 보이면 위치와 크기를 맞춘다</span> <button type="button" class="btn xs" data-k="_adjreset" data-v="1">초기화</button></p><div class="adjgrid">${LOOK_OPT.adjust.filter(([k]) => !(k.startsWith('beard') && UI.race === 'elf')).map(([k, ko, mn, mxv, st, df]) => { const v = L[k] === undefined ? df : L[k]; return `<label class="adj"><span>${ko}</span><input type="range" min="${mn}" max="${mxv}" step="${st}" value="${v}" data-r="${k}" aria-label="${ko}"><b class="num" data-rv="${k}">${(+v).toFixed(st < .1 ? 2 : st < 1 ? (st === .25 ? 2 : 1) : 0)}</b></label>` }).join('')}</div>` +
     `<p class="sec-t mt">시작 무기 <span class="muted">— 초기 전투 방식만 정한다. 어떤 무기로 시작해도 모든 직업으로 전직할 수 있다</span></p><div class="wgrid">${Object.entries(START_WEAPONS).map(([k, w]) => `<button type="button" class="wcard${UI.cc.weapon === k ? ' on' : ''}" data-k="weapon" data-v="${k}" aria-pressed="${UI.cc.weapon === k}"><b>${w.ko}</b><small>${w.style}</small><small>${w.lean}</small></button>`).join('')}</div>
-    <div class="cc-sum"><b>${W2.ko}</b> — ${W2.desc}<br><span class="muted">시작 능력치 보너스: ${Object.entries(W2.alloc).map(([k, v]) => STATS[k].ko + ' +' + v).join(' · ')} · 방어 동작: ${DEF_KO[{ sword: 'block', staff: 'manashield', dagger: 'parry', hammer: 'guard' }[UI.cc.weapon] || 'evade']}</span></div>`;
+    <div class="cc-sum"><b>${W2.ko}</b> — ${W2.desc}<br><span class="muted">시작 능력치 보너스: ${Object.entries(W2.alloc).map(([k, v]) => STATS[k].ko + ' +' + v).join(' · ')} · 방어 동작: ${DEF_KO[{ sword: 'block', staff: 'manashield', dagger: 'parry', hammer: 'guard', spear: 'guard' }[UI.cc.weapon] || 'evade']}</span></div>`;
   $('#cc-race').innerHTML = `<b>종족 특성</b><ul class="traits">${r.traits.map(t => `<li>${t}</li>`).join('')}<li class="bad">${r.penalty}</li></ul><b>시작 지역</b>${r.startArea}<b>랭크 성장</b>${r.ranks.join(' → ')}<b>이야기</b>${r.motive}`;
   paintCreate();
 }
@@ -12815,7 +12847,11 @@ const _drawHumanoid18sh = drawHumanoid; drawHumanoid = function (c, x, y, o) {
   if (o && o.held && HELDW18[o.held] && W && W.kind === 'town' && !o.sil) { o = Object.assign({}, o, { held: 'none', sheathW18: { w: HELDW18[o.held], col: o.held === 'hammer' ? '#8a8a8a' : o.held === 'staff' ? '#6a4a2a' : undefined } }) }
   const SW = o && o.sheathW18; if (!SW || o.sil) return _drawHumanoid18sh(c, x, y, o);
   const BD = BUILD[o.build] || BUILD.human, sz = o.size || 1, f = o.face || 1, H = BD.H * (o.bLeg || 1), Wd = BD.W * (o.bW || 1);
-  const tr = () => { c.save(); c.translate(x, y); c.scale(sz * f, sz * (o.bHt || 1)) };
+  // 몸과 같은 변환(구르기·감정 표현·공격 동작·쪼그려 앉기·걸음 흔들림)을 그대로 따라간다
+  const tr = () => { c.save(); c.translate(x, y); c.scale(sz * f, sz * (o.bHt || 1));
+    const PZ = o.pose ? poseXf(o.pose, o.poseT || 0) : null; if (PZ) { c.translate(PZ.dx, PZ.dy); if (PZ.rollA) { c.translate(0, -18 * BD.H); c.rotate(PZ.rollA); c.translate(0, 18 * BD.H) } if (PZ.rot) { c.translate(0, -4); c.rotate(PZ.rot); c.translate(0, 4) } if (PZ.sx !== 1) c.scale(PZ.sx, 1) }
+    const a0 = o.anim || 'idle', at0 = (o.t || 0) * 6, sq = a0 === 'squat' ? (Math.sin(at0 * .4) * .5 + .5) : 0; if (sq) { c.translate(0, sq * 5 * H); c.scale(1 + sq * .06, 1 - sq * .14) }
+    const bob = o.moving ? Math.abs(Math.sin(o.walk || 0)) * 1.5 : 0; if (bob) c.translate(0, -bob * .6) };
   const back = SW.w && BACKW18.has(SW.w);
   // 등에 메는 것(몸 뒤): 긴 무기·방패
   if (back || SW.off === 'shield') { tr(); if (SW.off === 'shield') { c.save(); c.translate(-8.5 * Wd, -24 * H); c.scale(.95, .95); try { drawOffhand(c, 'shield', SW.offCol) } catch (e) { } c.restore() }
@@ -12903,6 +12939,433 @@ netUi = function () { _netUi18(); const el = document.getElementById('online'); 
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-net="srv"]'); if (!b) return; let cur = ''; try { cur = localStorage.getItem('fb_server') || '' } catch (x) { }
   const v = prompt('게임 서버 주소 (예: frostbound.onrender.com)\n비우면 서버 접속을 끄고 기본 방식으로 돌아간다.', cur || ''); if (v === null) return;
   try { if (v.trim()) localStorage.setItem('fb_server', v.trim()); else localStorage.removeItem('fb_server') } catch (x) { } toast('서버 주소를 저장했다. 페이지를 새로 고치면 적용된다.') }, true);
+
+/* =====================================================================
+   18차-14: 멀티플레이 2차 (게임 서버 접속 중일 때만 동작 — 오프라인·room 방식은 예전 그대로)
+   1) 장비 외형: 장착 칸마다 장비 ID(b)·단계·희귀도·염색·색 씨앗·투구 모양을 서버에 보내고, 서버가 검증해 같은 구역 사람에게 돌려준다.
+      받은 쪽은 그 ID 로 자기 게임의 장비 그리기(playerLook)를 그대로 써서 그린다. 모르는 ID 는 그 칸만 빈 것으로(기본 외형).
+   2) 파티: 초대(30초 만료)·수락·거절·탈퇴·추방·해산·파티장 넘기기. 왼쪽 파티 창(초상·이름·Lv·HP·직업·접속).
+   3) 들판 몬스터 공유: 같은 들판(○○_field, ○○_f동서남북)에 있는 사람은 같은 몬스터를 본다. HP·사망은 서버가 정한다.
+      주인(가장 먼저 들어온 사람)의 들판 생성기가 몬스터를 만들고, 몬스터마다 조종자 한 명이 움직임을 계산해 보낸다. 나머지는 받아서 보간.
+   4) 처치 보상: 서버가 처치 ID 로 한 번만 경험치(파티 인원 비율)·골드·개인 전리품(드롭 ID)을 정한다. 줍기도 서버 확인 후.
+   5) 퀘스트 공유: 파티원에게 공유(개인 이야기 퀘스트 제외), 자동 공유·자동 수락·진행 공유 설정.
+   6) 거래: 신청 → 창(왼쪽 나, 오른쪽 상대) → 준비 → 최종 확정 → 서버가 양쪽 소지 확인 → 한 번에 교환.
+   ===================================================================== */
+const CO = { me: () => WSN.me, zone: null, host: null, ready: false, mons: {}, pend: {}, lid: 0, eqSig: '', eqT: 0, hpSig: '', hpT: 0, posT: 0, party: null, invites: [], qoffers: [], trade: null, tlock: new Set(), portrait: {},
+  set: (() => { try { return Object.assign({ autoShare: true, autoAccept: false, prog: true }, JSON.parse(localStorage.getItem('fb_coop18') || '{}')) } catch (e) { return { autoShare: true, autoAccept: false, prog: true } } })() };
+function coSave18() { try { localStorage.setItem('fb_coop18', JSON.stringify(CO.set)) } catch (e) { } }
+const coWs18 = () => NET.mode18 === 'ws' && NET.ok;
+const coShared18 = z => /_(field|f[nesw])$/.test(z || '');
+const coOn18 = () => coWs18() && W && WSN.room === W.zone && CO.zone === W.zone && CO.ready && coShared18(W.zone);
+const coPersonal18 = qq => !qq || ['승급', '메인', '숨김', '전직', '동료'].includes(qq.kind) || qq.noble15 || (qq.race && qq.race !== '*');
+
+/* ------------------------------ 1. 장비 외형 ------------------------------ */
+function coEqMsg18() { const slots = {};
+  for (const k of ['weapon', 'offhand', 'head', 'body', 'boots', 'ring', 'amulet']) { const it = S.equip[k] && getInst(S.equip[k]); if (!it || !it.b) continue; const o = { b: it.b, t: it.t, r: it.r || 0, uid: it.uid };
+    for (const f of ['dye', 'cs18', 'hs18', 'sty', 'starter', 'starterW', 'rune', 'broken', 'wp', 'dur', 'maxDur']) if (it[f] !== undefined && it[f] !== null && it[f] !== false) o[f] = it[f]; slots[k] = o }
+  return { t: 'eq', slots, look: S.look || null, race: S.race, sh: !!(W && W.p && W.p.sh18), bag: S.bag18 || null } }
+function lookFromEq18(eq) { if (!eq || !eq.slots) return null; const key = JSON.stringify([eq.slots, eq.look, eq.race, eq.sh, eq.bag]); if (eq._k === key && eq._L) return eq._L;
+  const inv = [], equip = {}; let uid = 1;
+  for (const [k, it] of Object.entries(eq.slots)) { if (!it || !BASES[it.b] || BASES[it.b].slot !== k) continue; const c = Object.assign({}, it, { uid: uid }); inv.push(c); equip[k] = uid++ }
+  const sv = { inv: S.inv, equip: S.equip, look: S.look, race: S.race, bag: S.bag18 }; let L = null;
+  try { S.inv = inv; S.equip = Object.assign({ weapon: null, offhand: null, head: null, body: null, boots: null, ring: null, amulet: null }, equip); S.race = RACES[eq.race] ? eq.race : 'human'; S.look = eq.look && typeof eq.look === 'object' ? Object.assign(defaultLook(S.race), eq.look) : defaultLook(S.race); S.bag18 = eq.bag || null;
+    L = playerLook({ sh18: !!eq.sh, face: { x: 1, y: 0 }, x: 0, y: 0 }) } catch (e) { L = null } finally { S.inv = sv.inv; S.equip = sv.equip; S.look = sv.look; S.race = sv.race; S.bag18 = sv.bag }
+  if (L) { delete L.fx18; delete L.glowRepair } eq._k = key; eq._L = L; return L }
+function coEqTick18(now) { if (now - CO.eqT < 400) return; CO.eqT = now; const m = coEqMsg18(), sig = JSON.stringify(m); if (sig === CO.eqSig) return; if (wsSend18(m)) CO.eqSig = sig }
+const _drawPeer18c = drawPeer; drawPeer = function (c, v, wt) { const L = v.eq18 && lookFromEq18(v.eq18);
+  if (!L) { // 장비 정보를 못 받은 경우(이전 서버 등): 내 종족 모양으로 그려지지 않게 상대 종족을 분명히 넘긴다
+    const keep = v.P.lk, lk = Object.assign({}, keep || {}); if (typeof SUB14 !== 'undefined' && SUB14[v.P.race] && !lk.race14) lk.race14 = v.P.race; v.P.lk = lk; try { return _drawPeer18c(c, v, wt) } finally { v.P.lk = keep } }
+  const keep = v.P.lk, lk = Object.assign({}, L); delete lk.face; v.P.lk = lk; try { _drawPeer18c(c, v, wt) } finally { v.P.lk = keep }
+  if (CO.party && CO.party.members.some(x => x.id === v.peer)) { const s = iso(v.x, v.y); c.strokeStyle = 'rgba(120,230,140,.85)'; c.lineWidth = 2; c.beginPath(); c.ellipse(s.x, s.y, 13, 6.5, 0, 0, 7); c.stroke() } };
+
+/* ------------------------------ 2. 파티 ------------------------------ */
+function coHpTick18(now) { if (!CO.party || now - CO.hpT < 250) return; const hp = Math.max(0, Math.round(S.hp)), mhp = Math.round(ST.hp), sig = hp + '/' + mhp; if (sig === CO.hpSig) return; CO.hpT = now; if (wsSend18({ t: 'hp', hp, mhp })) CO.hpSig = sig }
+function coParty18(a, o) { if (!coWs18()) { toast('서버에 접속해 있지 않다'); return } wsSend18(Object.assign({ t: 'party', a }, o || {})) }
+function coPortrait18(m) { const key = m.id === WSN.me ? CO.eqSig : JSON.stringify(m.eq ? m.eq.slots : null) + JSON.stringify(m.eq ? [m.eq.look, m.eq.sh] : 0); if (CO.portrait[m.id] && CO.portrait[m.id].k === key) return CO.portrait[m.id].url;
+  let url = ''; try { const cv = document.createElement('canvas'); cv.width = 44; cv.height = 44; const c = cv.getContext('2d'); const L = m.id === WSN.me ? playerLook(W.p) : lookFromEq18(m.eq);
+    c.translate(22, 64); c.scale(1.25, 1.25); drawHumanoid(c, 0, 0, Object.assign({ build: m.race || 'human', skin: '#e0b090', outfit: 'tunic', c1: '#6a7a8a' }, L || {}, { face: 1, t: 0, walk: 0, moving: false, pose: null, fx18: null })); url = cv.toDataURL() } catch (e) { }
+  CO.portrait[m.id] = { k: key, url }; return url }
+function coPartyUi18() { let el = document.getElementById('party18'); const show = coWs18() && S && UI.screen === 'game' && (CO.party || CO.invites.length || CO.qoffers.length || CO.tradeAsk);
+  if (!el) { el = document.createElement('div'); el.id = 'party18'; el.className = 'frame'; (document.getElementById('hud') || document.body).appendChild(el); el.addEventListener('click', coClick18); el.addEventListener('change', coClick18) }
+  if (!show) { el.hidden = true; return } el.hidden = false; const on = document.getElementById('online'); if (on && !on.hidden) el.style.top = (on.offsetTop + on.offsetHeight + 6) + 'px';
+  const now = Date.now(); let h = '';
+  for (const iv of CO.invites) { const left = Math.max(0, Math.ceil((iv.exp - now) / 1000)); h += `<div class="pinv18"><b>${esc(String(iv.nm).slice(0, 16))}</b> (Lv.${iv.lv | 0}) 님의 파티 초대 · ${left}초<br><button class="btn xs" data-co="pacc" data-pid="${esc(iv.pid)}">수락</button> <button class="btn xs" data-co="pdec" data-pid="${esc(iv.pid)}">거절</button></div>` }
+  for (const q of CO.qoffers) { const qq = QBY[q.qid]; h += `<div class="pinv18">${esc(String(q.nm).slice(0, 16))} 님이 퀘스트를 공유했다: <b>${esc(qq ? qq.title : q.qid)}</b><br><button class="btn xs" data-co="qacc" data-qid="${esc(q.qid)}" data-from="${esc(q.from)}">수락</button> <button class="btn xs" data-co="qdec" data-qid="${esc(q.qid)}" data-from="${esc(q.from)}">거절</button></div>` }
+  if (CO.tradeAsk) { const a = CO.tradeAsk; h += `<div class="pinv18"><b>${esc(String(a.nm).slice(0, 16))}</b> (Lv.${a.lv | 0}) 님의 거래 신청<br><button class="btn xs" data-co="tacc">수락</button> <button class="btn xs" data-co="tdec">거절</button></div>` }
+  const P = CO.party;
+  if (P) { const lead = P.leader === WSN.me;
+    h += `<div class="ph18"><b>파티</b> <span class="muted">${P.members.length}명</span><span style="flex:1"></span><button class="btn xs" data-co="pmenu">관리</button></div>`;
+    for (const m of P.members) { const hp = m.hp === null || m.mhp === null ? null : Math.max(0, Math.min(1, m.hp / m.mhp)), me = m.id === WSN.me, here = m.z && W && m.z === W.zone;
+      const hpTxt = me ? `${Math.round(S.hp)}/${Math.round(ST.hp)}` : hp === null ? '?' : `${m.hp}/${m.mhp}`, hpK = me ? Math.max(0, S.hp / ST.hp) : hp;
+      h += `<div class="pm18${m.on ? '' : ' off'}"><img src="${coPortrait18(m)}" alt=""><div class="pmi"><div><span class="dot18 ${m.on ? 'on' : ''}" title="${m.on ? '접속 중' : '접속 끊김'}"></span>${P.leader === m.id ? '👑' : ''}<b>${esc(String(m.nm).slice(0, 16))}</b> <span class="muted">Lv.${m.lv | 0} ${esc(m.cls || '')}</span>${!me && !here && m.on ? ' <span class="muted">(다른 곳)</span>' : ''}${m.alive === false ? ' <span class="bad">쓰러짐</span>' : ''}</div>
+        <div class="hpb18"><i style="width:${hpK === null ? 0 : Math.round(hpK * 100)}%"></i><span>${hpTxt}</span></div>
+        ${CO.pmenu && lead && !me ? `<div><button class="btn xs" data-co="pleader" data-id="${esc(m.id)}">파티장 넘기기</button> <button class="btn xs" data-co="pkick" data-id="${esc(m.id)}">추방</button></div>` : ''}</div></div>` }
+    if (CO.pmenu) { h += `<div class="pset18 small"><label><input type="checkbox" data-co="sAuto" ${CO.set.autoShare ? 'checked' : ''}> 퀘스트 받으면 자동 공유</label><br><label><input type="checkbox" data-co="sAcc" ${CO.set.autoAccept ? 'checked' : ''}> 공유받은 퀘스트 자동 수락</label><br><label><input type="checkbox" data-co="sProg" ${CO.set.prog ? 'checked' : ''}> 파티원 처치를 퀘스트 진행에 포함</label></div>`;
+      const qs = Object.keys(S.quests).filter(id => S.quests[id].st === 'active' && !coPersonal18(QBY[id])).slice(0, 6); if (qs.length) h += `<div class="small">공유할 퀘스트: ${qs.map(id => `<button class="btn xs" data-co="qshare" data-qid="${esc(id)}">${esc(QBY[id].title)}</button>`).join(' ')}</div>`;
+      h += `<div><button class="btn xs" data-co="pleave">파티 탈퇴</button>${lead ? ' <button class="btn xs" data-co="pdisband">해산</button>' : ''}</div>` } }
+  if (el._h18 !== h) { el._h18 = h; el.innerHTML = h } }
+function coClick18(e) { const b = e.target.closest && e.target.closest('[data-co]'); if (!b) return; const k = b.dataset.co; e.stopPropagation();
+  if (e.type === 'change') { if (k === 'sAuto') CO.set.autoShare = b.checked; if (k === 'sAcc') CO.set.autoAccept = b.checked; if (k === 'sProg') CO.set.prog = b.checked; coSave18(); return }
+  if (b.tagName === 'INPUT') return;
+  switch (k) {
+    case 'pacc': case 'pdec': coParty18(k === 'pacc' ? 'accept' : 'decline', { pid: b.dataset.pid }); CO.invites = CO.invites.filter(x => x.pid !== b.dataset.pid); break;
+    case 'pmenu': CO.pmenu = !CO.pmenu; break;
+    case 'pleave': coParty18('leave'); break; case 'pdisband': coParty18('disband'); break;
+    case 'pkick': coParty18('kick', { id: b.dataset.id }); break; case 'pleader': coParty18('leader', { id: b.dataset.id }); break;
+    case 'qshare': wsSend18({ t: 'qshare', qid: b.dataset.qid }); break;
+    case 'qacc': case 'qdec': coQAnswer18(b.dataset.qid, b.dataset.from, k === 'qacc'); break;
+    case 'tacc': case 'tdec': if (CO.tradeAsk) { if (k === 'tacc') CO.trade = { tid: CO.tradeAsk.tid, mine: [], gold: 0, st: null }; wsSend18({ t: 'trade', a: 'answer', ok: k === 'tacc' }); CO.tradeAsk = null } break;
+    case 'inv': coParty18('invite', { to: b.dataset.id }); break;
+    case 'trade': wsSend18({ t: 'trade', a: 'req', to: b.dataset.id }); break }
+  coPartyUi18() }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#online [data-co]'); if (b) coClick18(e) }, true);
+/* 접속자 목록에 [초대] [거래] 단추 */
+const _netUi18c = netUi; netUi = function () { _netUi18c(); if (NET.mode18 !== 'ws' || !NET.ok) return; const el = document.getElementById('online'), ls = el && el.querySelector('.nlist18'); if (!ls) return;
+  const here = Object.values(NET.view).filter(v => v.P && W && v.P.z === W.zone); if (!here.length) return; const inP = id => CO.party && CO.party.members.some(m => m.id === id);
+  ls.innerHTML = '같은 구역: ' + here.map(v => `<span class="np18">${esc(String(v.P.nm).slice(0, 16))}(Lv.${v.P.lv | 0})${inP(v.peer) ? ' <b class="good">파티</b>' : ` <button class="btn xs" data-co="inv" data-id="${esc(v.peer)}">초대</button>`} <button class="btn xs" data-co="trade" data-id="${esc(v.peer)}">거래</button></span>`).join(' ') };
+
+/* ------------------------------ 3·4. 들판 몬스터 공유 · 보상 ------------------------------ */
+function coSpi18(m) { return m.spawner ? W.spawners.indexOf(m.spawner) : -1 }
+function coRegister18(list) { const out = []; for (const m of list) { if (m.nid18 || m.lid18 || m.dead) continue; m.lid18 = 'l' + (++CO.lid); m.net18 = true; m.ctl18 = WSN.me; m.hpL18 = m.hp; CO.pend[m.lid18] = m;
+    out.push({ lid: m.lid18, kind: m.kind, lv: m.lv, mhp: Math.round(m.maxHp), x: +m.x.toFixed(2), y: +m.y.toFixed(2), spi: coSpi18(m) }) }
+  for (let i = 0; i < out.length; i += 40) wsSend18({ t: 'madd', list: out.slice(i, i + 40) }) }
+function coPuppet18(d) { if (CO.mons[d.id]) return CO.mons[d.id]; if (!MON[d.kind]) return null; const sp = d.spi >= 0 ? W.spawners[d.spi] : null;
+  const m = spawnMon(d.kind, d.lv, d.x, d.y, { spawner: sp || undefined }); if (!m) return null; m.lv = d.lv; m.maxHp = d.mhp; m.hp = d.hp; m.hpL18 = d.hp; m.net18 = true; m.nid18 = d.id; m.ctl18 = d.ctl; m.tx18 = d.x; m.ty18 = d.y; m.face = d.f || 0; m.state = d.st || 'idle';
+  if (sp) { sp.alive.push(m); sp.spawned = true; sp.lastSpawn = W.t } CO.mons[d.id] = m; return m }
+function coDrop18(m) { m.dead = true; m.despawn = true; m.deadAt = W.t - 5; if (m.spawner) m.spawner.alive = m.spawner.alive.filter(x => x !== m) }
+function coAdopt18(msg) { // 들판 룸 입장 시 서버 목록 받기
+  CO.zone = msg.room; CO.host = msg.host; CO.mons = {}; CO.pend = {}; CO.ready = true; const local = W.mons.filter(m => m.spawner && !m.dead && !m.ally);
+  if (CO.host === WSN.me && !msg.mons.length) { for (const m of W.mons) { delete m.nid18; delete m.lid18 } coRegister18(local); return }
+  for (const m of local) coDrop18(m); for (const sp of W.spawners) sp.alive = sp.alive.filter(x => !x.dead);
+  for (const d of msg.mons) coPuppet18(d) }
+function coLocalize18() { // 서버와 끊기면 공유 몬스터를 내 것으로 되돌려 혼자 계속 플레이
+  if (!W) return; for (const m of W.mons) if (m.net18) { delete m.net18; delete m.nid18; delete m.lid18; delete m.ctl18; delete m.srvDead18; m.aggro = false; m.state = 'idle' } CO.mons = {}; CO.pend = {}; CO.ready = false; CO.zone = null }
+function coSetCtl18(m, ctl) { const was = m.ctl18; m.ctl18 = ctl; if (was === WSN.me && ctl !== WSN.me) { m.pending = null; cancelTeleOf(m); m.wind = 0; m.tx18 = m.x; m.ty18 = m.y } if (ctl === WSN.me && was !== WSN.me) { m.home = m.home || { x: m.x, y: m.y } } }
+function coDeathFx18(m) { // 서버가 확정한 죽음: 화면 효과만 (보상은 mreward 로 따로)
+  if (m.dead) return; m.srvDead18 = true; const sv = { g: S.gold, k: S.kills, b: JSON.stringify(S.best[m.kind] || null), f: S.flags['cnt_' + m.kind], xp: giveXp, dl: dropLoot, em: emit };
+  giveXp = () => { }; dropLoot = () => { }; emit = () => { };
+  try { finishKill(m) } catch (e) { m.dead = true; m.deadAt = W.t } finally { giveXp = sv.xp; dropLoot = sv.dl; emit = sv.em; S.gold = sv.g; S.kills = sv.k; const b = JSON.parse(sv.b); if (b) S.best[m.kind] = b; else delete S.best[m.kind]; if (sv.f === undefined) delete S.flags['cnt_' + m.kind]; else S.flags['cnt_' + m.kind] = sv.f }
+  for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; if (f.type === 'text' && /^\+\d+G$/.test(f.txt || '') && f.x === m.x) { fx.splice(i, 1); break } } }
+function coReward18(r) { const m = CO.mons[r.id] || { kind: r.kind, M: MON[r.kind], lv: r.lv, x: W.p.x, y: W.p.y }, M = MON[r.kind]; delete CO.mons[r.id];
+  if (r.xp) giveXp(r.xp, (M ? M.name : r.kind) + (r.party > 1 ? ` · 파티 ${r.party}명 ×${r.mult}` : ''), r.lv);
+  if (r.gold) { S.gold += r.gold; fx.push({ type: 'text', x: m.x, y: m.y - .2, t: 0, txt: `+${r.gold}G`, c: '#e3a64e' }) }
+  if (r.contrib || CO.set.prog) { S.kills++; const b = S.best[r.kind] = S.best[r.kind] || { seen: 1, k: 0 }; b.k++; b.seen = 1; S.flags['cnt_' + r.kind] = (S.flags['cnt_' + r.kind] || 0) + 1; try { emit('kill', r.kind, { m, z: W.region, w: weaponInfo().mode }) } catch (e) { } }
+  if (r.contrib) try { temperOnKill(m) } catch (e) { }
+  for (const l of r.loot || []) { const e = { x: l.x, y: l.y, t: 0, did18: l.did }; if (l.gear) e.gear = { b: l.gear.b, t: l.gear.t, r: l.gear.r, q: 1 }; else if (ITEMS[l.id]) { e.id = l.id; e.qty = l.qty || 1 } else continue; W.loot.push(e) } }
+function coFindLoot18(did) { return W && W.loot.find(l => l.did18 === did) }
+const _lootPickTick18c = lootPickTick; lootPickTick = function (dt) { if (!W.loot.some(l => l.did18)) return _lootPickTick18c(dt);
+  const p = W.p, hold = []; for (const l of W.loot) { if (!l.did18) continue; hold.push(l); if (l.pend18 || l.got) continue; if (dist(l, p) >= 1.1) continue;
+    const full = l.gear ? invFull() : invFull() && !S.inv.find(x => x.id === l.id) && !(typeof pouchTakes === 'function' && pouchTakes(l.id)); if (full) { if (!l.fullMsg18) { lootFullMsg(); l.fullMsg18 = true } continue }
+    if (coWs18() && wsSend18({ t: 'pick', did: l.did18 })) { l.pend18 = true; l.pendT18 = performance.now() } }
+  const keep = W.loot; W.loot = keep.filter(l => !l.did18); try { _lootPickTick18c(dt) } finally { const done = new Set(W.loot); W.loot = keep.filter(l => !l.did18 ? done.has(l) : true); for (const l of W.loot) if (l.pend18 && performance.now() - l.pendT18 > 5000) l.pend18 = false } };
+function coPicked18(m) { const l = coFindLoot18(m.did); if (!l) return; if (!m.ok) { l.got = true; W.loot = W.loot.filter(x => x !== l); toast('전리품: ' + (m.why || '줍지 못했다')); return } l.did18 = null; l.pend18 = false } // 확인됨 → 이제 일반 전리품처럼 주워진다(가방이 차면 땅에 남는다)
+
+/* 몬스터 갱신: 내가 조종하지 않는 공유 몬스터는 AI 를 돌리지 않고 받은 위치로 보간 */
+const _updateMon18c = updateMon; updateMon = function (m, dt) { if (m.net18 && m.ctl18 !== WSN.me && coOn18()) return; return _updateMon18c(m, dt) };
+const _killMon18c = killMon; killMon = function (m, o) { if (m && m.net18 && !m.srvDead18 && coOn18()) return coHold18(m); return _killMon18c.apply(this, arguments) };
+const _finishKill18c = finishKill; finishKill = function (m) { if (m && m.net18 && !m.srvDead18 && coOn18()) return coHold18(m); return _finishKill18c.apply(this, arguments) };
+function coHold18(m) { const d = Math.max(0, (m.hpL18 ?? m.maxHp) - m.hp); m.hp = 1; m.hpL18 = 1; if (m.state === 'corpse') m.state = 'chase'; coHit18(m, d + 1) }
+function coHit18(m, d) { if (d > 0) m.dq18 = (m.dq18 || 0) + d; if (m.hp <= 1) CO.hitT = 0 }   // 모아 두었다가 0.1초마다 한 번에 보낸다 (마지막 일격은 바로)
+const _updateSpawners18c = updateSpawners; updateSpawners = function (initial) { if (!coOn18()) return _updateSpawners18c(initial);
+  if (CO.host !== WSN.me) { for (const sp of W.spawners) sp.alive = sp.alive.filter(m => !m.dead); return }
+  const before = new Set(W.mons); _updateSpawners18c(initial); const add = W.mons.filter(m => !before.has(m) && m.spawner && !m.ally); if (add.length) coRegister18(add) };
+function coMonTick18(dt, now) { if (!coOn18()) return; const me = WSN.me, pos = [];
+  for (const m of W.mons) { if (!m.net18) continue;
+    if (m.dead) { if (m.despawn && !m.srvDead18 && !m.gone18 && m.nid18 && (m.ctl18 === me || CO.host === me)) { m.gone18 = true; wsSend18({ t: 'mgone', id: m.nid18 }); delete CO.mons[m.nid18] } continue }
+    if (m.hpL18 === undefined) m.hpL18 = m.hp; if (m.hp < m.hpL18) { coHit18(m, m.hpL18 - m.hp); m.hpL18 = m.hp } else if (m.hp > m.hpL18) m.hp = m.hpL18; // HP 는 서버 값만 (회복은 서버가 하지 않는다)
+    if (m.ctl18 === me) { if (m.nid18) { const st = m.aggro ? 'chase' : m.state === 'return' ? 'return' : 'idle', k = m.x.toFixed(2) + m.y.toFixed(2) + st + (m.face || 0).toFixed(1); if (k !== m.posK18) { m.posK18 = k; pos.push([m.nid18, +m.x.toFixed(2), +m.y.toFixed(2), +(m.face || 0).toFixed(2), st, m.aggro ? 1 : 0]) } } }
+    else { const k = Math.min(1, dt * 10); if (m.tx18 !== undefined) { const dx = m.tx18 - m.x, dy = m.ty18 - m.y, dd = Math.hypot(dx, dy); if (dd > 8) { m.x = m.tx18; m.y = m.ty18 } else { m.x += dx * k; m.y += dy * k } m.mv18 = dd > .05 } if (m.flash > 0) m.flash -= dt; m.state = m.st18 === 'chase' || m.mv18 ? 'chase' : 'idle';
+      if (m.st18 !== 'chase' && dist(m, W.p) < 6.5 && S.hp > 0 && now - (m.takeT18 || 0) > 2500) { m.takeT18 = now; wsSend18({ t: 'mtake', id: m.nid18 }) } } }
+  if (now - (CO.hitT || 0) > 100) { const hl = []; for (const m of W.mons) if (m.net18 && m.nid18 && m.dq18 >= 1) { hl.push([m.nid18, Math.round(m.dq18)]); m.dq18 = 0 } if (hl.length) { CO.hitT = now; wsSend18({ t: 'mhit', l: hl }) } }
+  if (pos.length && now - CO.posT > 120) { CO.posT = now; for (let i = 0; i < pos.length; i += 100) wsSend18({ t: 'mpos', l: pos.slice(i, i + 100) }) } else if (pos.length) for (const p of pos) { const m = CO.mons[p[0]]; if (m) m.posK18 = '' } }
+
+/* ------------------------------ 5. 퀘스트 공유 ------------------------------ */
+const _acceptQuest18c = acceptQuest; acceptQuest = function (id) { const had = S.quests[id]; const r = _acceptQuest18c.apply(this, arguments); try { if (!had && S.quests[id] && CO.party && CO.set.autoShare && !coPersonal18(QBY[id]) && !CO.qNoShare) wsSend18({ t: 'qshare', qid: id }) } catch (e) { } return r };
+function coQCheck18(qid) { const qq = QBY[qid]; if (!qq) return '모르는 퀘스트'; if (coPersonal18(qq)) return '개인 퀘스트'; if (S.quests[qid]) return S.quests[qid].st === 'done' ? '이미 완료함' : '이미 진행 중'; if (!qAvailable(qq, true)) return '받을 조건이 안 됨'; return qAcceptBlock(qq) || null }
+function coQAnswer18(qid, from, ok) { CO.qoffers = CO.qoffers.filter(x => !(x.qid === qid && x.from === from)); let why = ok ? coQCheck18(qid) : '거절';
+  if (ok && !why) { CO.qNoShare = true; try { acceptQuest(qid) } finally { CO.qNoShare = false } if (!S.quests[qid]) why = '수락 실패' } wsSend18({ t: 'qresp', to: from, qid, ok: ok && !why, why: why || '' }); if (why && ok) toast('퀘스트를 받을 수 없다: ' + why) }
+function coQOffer18(m) { const why = coQCheck18(m.qid); if (why) { wsSend18({ t: 'qresp', to: m.from, qid: m.qid, ok: false, why }); return } if (CO.set.autoAccept) return coQAnswer18(m.qid, m.from, true); CO.qoffers.push(m); sfx('quest') }
+
+/* ------------------------------ 6. 거래 ------------------------------ */
+function coTradeItem18(it, qty) { if (it.b) { const g = {}; for (const k of ['b', 't', 'r', 'q', 'aff', 'dur', 'maxDur', 'cb', 'cs18', 'dye', 'hs18', 'sk', 'crafted', 'name', 'broken', 'sty']) if (it[k] !== undefined) g[k] = it[k]; return { uid: it.uid, gear: g } } return { uid: it.uid, id: it.id, qty: qty || it.qty } }
+function coTradable18(it) { if (!it || it.uid < 0) return '보따리'; if (isEquipped(it.uid)) return '장착 중'; if (!it.b && ITEMS[it.id] && ITEMS[it.id].type === 'quest') return '퀘스트 물건'; if (it.lent || (it.name && /^시험용/.test(it.name))) return '빌린 물건'; if (it.bound || it.starter || it.starterW || it.id === 'pouch_mat') return '귀속'; return null }
+function coTradeSend18() { const T = CO.trade; if (!T) return; wsSend18({ t: 'trade', a: 'set', items: T.mine.map(x => coTradeItem18(getInst(x.uid), x.qty)).filter(Boolean), gold: T.gold | 0 }) }
+function coTradeUi18() { let el = document.getElementById('trade18'); const T = CO.trade; if (!T || !T.st) { if (el) el.hidden = true; return }
+  if (!el) { el = document.createElement('div'); el.id = 'trade18'; el.className = 'frame'; (document.getElementById('hud') || document.body).appendChild(el); el.addEventListener('click', coTradeClick18); el.addEventListener('keydown', e => e.stopPropagation()); el.addEventListener('change', coTradeClick18) }
+  el.hidden = false; const st = T.st, me = st.me, th = st.them, lock = me.ready || st.stage === 'verify';
+  // 올린 물건: 아이콘 칸 (상점 판매 칸과 같은 모양)
+  const obj = it => it.gear ? it.gear : { id: it.id, qty: it.qty }, okId = it => it.gear ? !!BASES[it.gear.b] : !!ITEMS[it.id];
+  const tileOf = (it, mine) => { if (!okId(it)) return `<div class="tile st-lock"><span class="nm">알 수 없는 물건</span></div>`; const o = obj(it), qty = it.gear ? 1 : it.qty;
+    return `<button class="tile${mine && !lock ? '' : ' ro18'}" ${mine && !lock ? `data-tr="rm" data-uid="${it.uid}"` : ''} style="--rc:${itemColor(o)}" ${mine ? `data-tip="item:${it.uid}"` : `title="${esc(itemName(o) + (it.gear ? ` · ${RARITY[it.gear.r || 0].ko} · ${it.gear.t}단계` + (it.gear.aff && it.gear.aff.length ? ' · 옵션 ' + it.gear.aff.length + '개' : '') : ''))}"`}><canvas data-ico="${iconKey(o)}" data-sz="40" aria-hidden="true"></canvas><span class="nm">${esc(itemName(o))}</span>${qty > 1 ? `<span class="q num">${qty}</span>` : ''}</button>` };
+  const side = (s, mine) => { const n = s.items.length; let h = s.items.map(it => tileOf(it, mine)).join(''); for (let k = n; k < 9; k++) h += '<div class="tile empty18"></div>'; return `<div class="tgrid tg9">${h}</div>` };
+  // 내 가방: 종류 탭 + 아이콘 칸 (장착 중·퀘스트·귀속 물건은 흐리게, 이유 표시)
+  const all = S.inv.filter(it => !T.mine.some(x => x.uid === it.uid)), cats = CAT.filter(([k]) => all.some(it => itemCat(it) === k)); if (T.cat && T.cat !== 'all' && !cats.some(([k]) => k === T.cat)) T.cat = 'all'; const F = T.cat || 'all';
+  const order = it => [CAT.findIndex(([k]) => k === itemCat(it)), isGear(it) ? -(it.r || 0) : 0, isGear(it) ? -it.t : 0, itemName(it)];
+  const list = all.filter(it => F === 'all' || itemCat(it) === F).sort((a, b) => { const A = order(a), B = order(b); for (let i = 0; i < 4; i++) if (A[i] !== B[i]) return A[i] < B[i] ? -1 : 1; return 0 });
+  const inv = `<div class="tabs sm"><button class="tab${F === 'all' ? ' on' : ''}" data-tr="cat" data-c="all">전체 ${all.length}</button>${cats.map(([k, ko]) => `<button class="tab${F === k ? ' on' : ''}" data-tr="cat" data-c="${k}">${ko} ${all.filter(it => itemCat(it) === k).length}</button>`).join('')}</div>
+    <div class="tgrid tinv18">${list.map(it => { const why = coTradable18(it), eq = isEquipped(it.uid), dis = why || lock || T.mine.length >= 9; return `<button class="tile${why ? ' st-lock' : ''}" ${dis ? '' : `data-tr="add" data-uid="${it.uid}"`} style="--rc:${itemColor(it)}" data-tip="item:${it.uid}"><canvas data-ico="${iconKey(it)}" data-sz="40" aria-hidden="true"></canvas><span class="nm">${esc(itemName(it))}</span>${!isGear(it) && it.qty > 1 ? `<span class="q num">${it.qty}</span>` : ''}${eq ? '<span class="eq">E</span>' : ''}${why ? `<span class="why18">${esc(why)}</span>` : ''}</button>` }).join('') || '<p class="muted">가방이 비어 있다.</p>'}</div>`;
+  const nmT = esc(String(th.nm).slice(0, 16));
+  el.innerHTML = `<div class="th18"><b>거래</b> <span class="muted">${nmT} (Lv.${th.lv | 0}) · ${st.stage === 'verify' ? '서버 확인 중…' : '물건을 올리고 양쪽이 준비 → 최종 확정을 누르면 교환'}</span><span style="flex:1"></span><button class="btn xs" data-tr="cancel">취소 (Esc)</button></div>
+  <div class="tc18"><div class="tside18"><div class="tt18">나 ${me.ready ? '<b class="good">준비 완료</b>' : '<span class="muted">준비 전</span>'}${me.conf ? ' · <b class="good">확정</b>' : ''} <span class="muted small">${me.items.length}/9 · 눌러서 빼기</span></div>${side(me, true)}<div class="tg18">골드 <input type="number" min="0" max="${S.gold}" value="${T.gold | 0}" data-tr="gold" ${lock ? 'disabled' : ''}> <span class="muted">/ 보유 ${S.gold.toLocaleString()}G</span></div></div>
+  <div class="tside18"><div class="tt18">${nmT} ${th.ready ? '<b class="good">준비 완료</b>' : '<span class="muted">준비 전</span>'}${th.conf ? ' · <b class="good">확정</b>' : ''} <span class="muted small">${th.items.length}/9</span></div>${side(th, false)}<div class="tg18">골드 <b class="num">${(th.gold | 0).toLocaleString()}G</b></div></div></div>
+  <div class="tb18"><button class="btn" data-tr="ready">${me.ready ? '준비 해제' : '준비'}</button> <button class="btn primary" data-tr="confirm" ${me.ready && th.ready && !me.conf ? '' : 'disabled'}>최종 확정</button></div>
+  <div class="tinvw18"><div class="small muted">내 가방 — 눌러서 거래에 올리기${lock ? ' (준비를 풀어야 바꿀 수 있다)' : ''} · 장착 중·퀘스트·귀속 물건은 올릴 수 없다</div>${inv}</div>`;
+  try { paintIcons(el) } catch (e) { } }
+function coTradeClick18(e) { const b = e.target.closest && e.target.closest('[data-tr]'); if (!b) return; const T = CO.trade; if (!T) return; const k = b.dataset.tr; e.stopPropagation();
+  if (k === 'gold') { if (e.type !== 'change') return; T.gold = Math.max(0, Math.min(S.gold, Math.floor(+b.value || 0))); coTradeSend18(); return }
+  if (e.type === 'change') return;
+  if (k === 'cancel') { wsSend18({ t: 'trade', a: 'cancel' }); return }
+  if (k === 'ready') { wsSend18({ t: 'trade', a: 'ready', v: !T.st.me.ready }); return }
+  if (k === 'confirm') { wsSend18({ t: 'trade', a: 'confirm' }); return }
+  if (k === 'cat') { T.cat = b.dataset.c; coTradeUi18(); return }
+  if (k === 'add') { if (T.mine.length >= 9) { toast('거래 칸은 9개까지'); return } const it = getInst(+b.dataset.uid); if (!it || coTradable18(it)) return; let q = it.qty || 1; if (!it.b && it.qty > 1) { const v = prompt(`몇 개? (1~${it.qty})`, String(it.qty)); if (v === null) return; q = Math.max(1, Math.min(it.qty, Math.floor(+v || 0))) } T.mine.push({ uid: it.uid, qty: q }); CO.tlock.add(it.uid); coTradeSend18(); return }
+  if (k === 'rm') { const u = +b.dataset.uid; T.mine = T.mine.filter(x => x.uid !== u); CO.tlock.delete(u); coTradeSend18(); return } }
+function coTradeVerify18(m) { const fail = why => wsSend18({ t: 'trade', a: 'verified', ok: false, why });
+  for (const g of m.give) { const it = getInst(g.uid); if (!it) return fail('올린 물건이 가방에 없다'); if (coTradable18(it)) return fail('거래할 수 없는 물건: ' + coTradable18(it)); if (g.gear ? !it.b || it.b !== g.gear.b : it.id !== g.id || it.qty < g.qty) return fail('올린 물건이 바뀌었다') }
+  if (S.gold < m.gold) return fail('골드가 모자란다');
+  const freed = m.give.filter(g => { const it = getInst(g.uid); return it.b || it.qty === g.qty }).length; if (invUsed18() - freed + m.recvN > invCap18()) return fail('가방 공간이 모자란다');
+  wsSend18({ t: 'trade', a: 'verified', ok: true }) }
+function coTradeDone18(m) { // 서버가 확정한 교환을 한 번만 반영 (거래 ID 기록)
+  S.trades18 = S.trades18 || []; if (S.trades18.includes(m.tid)) return; S.trades18.push(m.tid); if (S.trades18.length > 50) S.trades18.shift();
+  for (const g of m.give) { const it = getInst(g.uid); if (!it) continue; if (it.b || it.qty <= g.qty) S.inv.splice(S.inv.indexOf(it), 1); else it.qty -= g.qty }
+  for (const r of m.recv) { if (r.gear) { const G = r.gear, gi = _addGear13(G.b, G.t, G.r, { aff: G.aff || [], q: G.q, name: G.name, crafted: G.crafted, cb: G.cb, silent: false, pickup: true }); if (gi) for (const k of ['dur', 'maxDur', 'broken', 'sk', 'dye', 'cs18', 'hs18', 'sty']) if (G[k] !== undefined) gi[k] = G[k] }
+    else addItem(r.id, r.qty, { pickup: true }) }
+  S.gold = Math.max(0, S.gold + m.gold); ST = computeStats(); toast('거래 완료'); log(`[거래] 완료 — 받은 물건 ${m.recv.length}개${m.gold ? `, 골드 ${m.gold > 0 ? '+' : ''}${m.gold}G` : ''}`, 'g'); sfx('pickup', 2); try { saveGame(true) } catch (e) { } }
+function coTradeEnd18() { CO.trade = null; CO.tradeAsk = null; CO.tlock.clear(); coTradeUi18() }
+const _equipItem18c = equipItem; equipItem = function (uid) { if (CO.tlock.has(uid)) { toast('거래에 올린 물건이다'); return false } return _equipItem18c.apply(this, arguments) };
+document.addEventListener('keydown', e => { if (CO.trade && e.key === 'Escape') { wsSend18({ t: 'trade', a: 'cancel' }); e.stopImmediatePropagation() } }, true);
+
+/* ------------------------------ 서버 메시지 ------------------------------ */
+const _wsOn18c = wsOn18; wsOn18 = function (m) { _wsOn18c(m);
+  try { switch (m.t) {
+    case 'welcome': CO.eqSig = ''; CO.hpSig = ''; CO.ready = false; if (!m.resumed) { CO.party = null; CO.invites = []; CO.qoffers = []; CO.tradeAsk = null } coPartyUi18(); break;
+    case 'room': for (const p of m.players) { const v = NET.view[p.id]; if (v) v.eq18 = p.eq || null } if (!coShared18(m.room)) { CO.ready = false; CO.zone = m.room } CO.eqSig = ''; break;
+    case 'pjoin': { const v = NET.view[m.p.id]; if (v) v.eq18 = m.p.eq || null; break }
+    case 'peq': { const v = NET.view[m.id]; if (v) v.eq18 = m.eq; if (CO.party) { const pm = CO.party.members.find(x => x.id === m.id); if (pm) pm.eq = m.eq } break }
+    case 'party': CO.party = m.party; if (m.party) CO.hpSig = ''; if (!m.party) { CO.pmenu = false; if (m.why === 'kick') toast('파티에서 추방되었다'); else if (m.why === 'disband') toast('파티가 해산되었다') } coPartyUi18(); netUi(); break;
+    case 'pinv': CO.invites = CO.invites.filter(x => x.pid !== m.pid); CO.invites.push(m); sfx('quest'); toast(`${String(m.nm).slice(0, 16)} 님의 파티 초대`); coPartyUi18(); break;
+    case 'pinv_x': CO.invites = CO.invites.filter(x => x.pid !== m.pid); coPartyUi18(); break;
+    case 'php': if (CO.party) { const pm = CO.party.members.find(x => x.id === m.id); if (pm) { pm.hp = m.hp; pm.mhp = m.mhp; pm.alive = m.alive } coPartyUi18() } break;
+    case 'info': toast(String(m.msg).slice(0, 80)); break;
+    case 'mlist': if (W && m.room === W.zone) coAdopt18(m); break;
+    case 'host': CO.host = m.id; break;
+    case 'madded': for (const a of m.list) { const lm = CO.pend[a.lid]; if (!lm) continue; delete CO.pend[a.lid]; lm.nid18 = a.id; CO.mons[a.id] = lm; if (lm.dead && !lm.srvDead18) { lm.gone18 = true; wsSend18({ t: 'mgone', id: a.id }) } } break;
+    case 'madd': if (coOn18()) for (const d of m.list) coPuppet18(d); break;
+    case 'mpos': if (coOn18()) for (const a of m.l) { const mm = CO.mons[a[0]]; if (!mm || mm.ctl18 === WSN.me) continue; mm.tx18 = a[1]; mm.ty18 = a[2]; mm.face = a[3]; mm.st18 = a[4]; mm.aggro = !!a[5] } break;
+    case 'mctl': { const mm = CO.mons[m.id]; if (mm) coSetCtl18(mm, m.ctl); break }
+    case 'mhp': { const mm = CO.mons[m.id]; if (mm && !mm.dead) { if (m.hp < mm.hp) mm.flash = .1; mm.hp = Math.max(1, m.hp); mm.hpL18 = mm.hp } break }
+    case 'mdie': { const mm = CO.mons[m.id]; if (mm) { coDeathFx18(mm); setTimeout(() => { if (CO.mons[m.id] === mm) delete CO.mons[m.id] }, 3000) } break }
+    case 'mgone': { const mm = CO.mons[m.id]; if (mm) { coDrop18(mm); delete CO.mons[m.id] } break }
+    case 'mreward': coReward18(m); break;
+    case 'picked': coPicked18(m); break;
+    case 'qoffer': coQOffer18(m); coPartyUi18(); break;
+    case 'qresp': toast(`${String(m.nm).slice(0, 16)}: ${m.ok ? '퀘스트를 받았다' : '퀘스트를 받지 않았다' + (m.why ? ' (' + String(m.why).slice(0, 30) + ')' : '')}`); break;
+    case 'tr_ask': CO.tradeAsk = m; sfx('quest'); toast(`${String(m.nm).slice(0, 16)} 님의 거래 신청`); coPartyUi18(); break;
+    case 'tr_state': CO.tradeAsk = null; if (!CO.trade || CO.trade.tid !== m.tid) CO.trade = { tid: m.tid, mine: [], gold: 0, st: null }; CO.trade.st = m; coTradeUi18(); break;
+    case 'tr_verify': coTradeVerify18(m); break;
+    case 'tr_done': coTradeDone18(m); coTradeEnd18(); break;
+    case 'tr_end': if (CO.trade || m.why) toast('거래 취소: ' + String(m.why || '').slice(0, 60)); coTradeEnd18(); break;
+    case 'err': if (m.code === 'party' || m.code === 'trade' || m.code === 'quest') toast(String(m.msg).slice(0, 60)); break } } catch (e) { console.warn('coop', m.t, e) } };
+/* 연결이 끊기면: 공유 몬스터를 내 것으로, 거래는 취소(서버도 취소), 파티 창은 접속 표시만 */
+setInterval(() => { if (NET.mode18 !== 'ws') return; if (!NET.ok) { if (CO.ready || Object.keys(CO.mons).length) coLocalize18(); if (CO.trade) coTradeEnd18(); for (const l of (W && W.loot) || []) if (l.did18) { l.did18 = null; l.pend18 = false } } coPartyUi18() }, 1000);
+/* 매 프레임 */
+const _netTick18c = netTick; netTick = function (dt) { _netTick18c(dt); if (NET.mode18 !== 'ws' || !NET.ok || !W || !S || !W.p) return; const now = performance.now();
+  if (WSN.room === W.zone) { coEqTick18(now); coHpTick18(now) } if (CO.zone && CO.zone !== W.zone) { CO.ready = false; CO.zone = null; CO.mons = {}; CO.pend = {} } coMonTick18(dt, now) };
+if (typeof window !== 'undefined' && window.__fb) Object.assign(window.__fb, { CO, lookFromEq18 });
+/* 같은 구역을 다시 불러와도(사망 후 부활·같은 들판 재입장 등) 서버와 다시 맞추도록 입장 메시지를 새로 보낸다 */
+const _loadZone18c = loadZone; loadZone = function () { if (NET.mode18 === 'ws') { CO.ready = false; CO.zone = null; CO.mons = {}; CO.pend = {}; WSN.room = null; WSN.joinT = 0 } return _loadZone18c.apply(this, arguments) };
+/* 창(가방·지도 등)을 열어 게임 갱신이 멈춰 있어도 서버와의 통신(입장·위치·외형·HP·몬스터 동기화)은 계속한다 */
+setInterval(() => { try { if (NET.mode18 === 'ws' && UI.screen === 'game' && UI.panel && W && S && W.p) netTick(.1) } catch (e) { } }, 100);
+
+/* 이전 서버 대비 외형 정보 보강: 아종(수인·도롱뇽)·투구 모양도 보낸다 */
+const _netLook18c = netLook; netLook = function () { const o = _netLook18c.apply(this, arguments); try { const L = playerLook(W.p); for (const k of ['race14', 'sub14', 'helm18']) if (L[k] !== undefined && L[k] !== null && typeof L[k] !== 'object') o[k] = L[k] } catch (e) { } return o };
+/* 서버가 2차 기능(장비 외형·파티·거래…)을 모르는 이전 버전이면 알린다 */
+const _wsOn18old = wsOn18; wsOn18 = function (m) { if (m && m.t === 'err' && m.code === 'unknown' && /eq|party|hp/.test(m.msg || '')) { if (!CO.oldSrv) { CO.oldSrv = true; netSys('⚠ 접속한 서버가 이전 버전이다 — 장비 외형 동기화·파티·몬스터 공유·거래가 동작하지 않는다. 서버 파일(server.js·game.js·catalog.json)을 새로 올려야 한다.'); netUi() } return } if (m && m.t === 'welcome') CO.oldSrv = false; return _wsOn18old(m) };
+
+/* =====================================================================
+   18차-15: 시작 무기에 「장창」·「맨손 건틀릿」 추가 + 건틀릿 무기 기술(트리)
+   · 장창: 긴 리치 찌르기 · 양손 · 무기 막기(guard)
+   · 맨손 건틀릿: 초근접 빠른 연타 · 회피 반격(evade). 격투가 전직 시험이 수월하다.
+   ===================================================================== */
+START_WEAPONS.spear = { ko: '장창', items: [['w_spear', 1]], alloc: { str: 1, agi: 1, vit: 1 }, style: '긴 리치 찌르기 · 무기 막기', desc: '가장 멀리서 찌른다. 다가오기 전에 끊어 치고, 묵직한 자루로 앞쪽 공격을 막아 낸다(무기 막기). 방패는 들 수 없다.', lean: '창기사·전사의 시험이 수월하다' };
+START_WEAPONS.gauntlet = { ko: '맨손 건틀릿', items: [['w_gauntlet', 1]], alloc: { agi: 2, str: 1 }, style: '초근접 빠른 연타 · 회피 반격', desc: '리치는 가장 짧지만 주먹이 가장 빠르다. 파고들어 연타하고, 피한 뒤 받아친다.', lean: '격투가의 시험이 수월하다' };
+/* 건틀릿 무기 기술 */
+if (!WPN_TYPES.includes('gauntlet')) WPN_TYPES.push('gauntlet');
+WS('gauntlet', '기술', 0, 'ws_gt_jab', '원투 연타', 'active', { mp: 4, sta: 10, cd: 2.8, pose: 'thrust', eff: { k: 'melee', mult: R3w(.9, 1.25), hits: 2, arc: 70, range: 1.3 } }, '좌우 주먹을 연달아 꽂아 타당 {mult}배 피해.');
+WS('gauntlet', '기술', 1, 'ws_gt_upper', '어퍼컷', 'active', { mp: 7, sta: 16, cd: 6, pose: 'thrust', eff: { k: 'melee', mult: R3w(1.8, 2.5), arc: 55, range: 1.3, stun: R3w(.6, 1), knock: .6 } }, '아래에서 올려 쳐 {mult}배 피해와 {stun}초 기절.');
+WS('gauntlet', '기술', 2, 'ws_gt_master', '건틀릿 숙련', 'passive', { eff: { mods: { aspdAdd: R3w(.04, .1), meleePct: R3w(.04, .1) } } }, '건틀릿을 끼면 공격 속도 +{aspdAdd} · 근접 공격력 +{meleePct}.');
+{ const T = TREES.wpn_gauntlet; if (T) T.branches = ['기술', '공용', '직업 특기'].filter(b => T.list.some(i => SKILLS[i].branch === b)) }
+for (const id of ['ws_gt_jab', 'ws_gt_upper', 'ws_gt_master']) if (!WPN_SKILL_IDS.includes(id)) WPN_SKILL_IDS.push(id);
+TREE_COL.wpn_gauntlet = ['#3a2a18', '#e8a050'];
+function fistGlyph18(c, x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col || '#b8bcc4'; c.beginPath(); c.roundRect(-8, -7, 16, 13, 4); c.fill(); c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = 1.2; c.stroke();
+  c.strokeStyle = 'rgba(0,0,0,.4)'; for (let k = -1; k <= 1; k++) { c.beginPath(); c.moveTo(-8 + 4 * (k + 2), -7); c.lineTo(-8 + 4 * (k + 2), -2); c.stroke() } c.fillStyle = '#7a5a3a'; c.fillRect(-6, 6, 12, 6); c.restore() }
+SKILL_ART.ws_gt_jab = c => { fistGlyph18(c, -6, 2, .9); fistGlyph18(c, 6, -4, .9, '#d0d4dc'); c.strokeStyle = '#ffe0a0'; c.lineWidth = 1.5; for (const y of [-12, -4, 4]) { c.beginPath(); c.moveTo(12, y); c.lineTo(18, y); c.stroke() } };
+SKILL_ART.ws_gt_upper = c => { c.save(); c.rotate(-.6); fistGlyph18(c, 0, 0, 1.1); c.restore(); c.strokeStyle = '#ffd070'; c.lineWidth = 2; c.beginPath(); c.arc(0, 6, 14, -2.6, -.6); c.stroke(); G.star(c, 8, -12, 5, 5, '#ffe9a0') };
+SKILL_ART.ws_gt_master = c => { fistGlyph18(c, 0, 2, 1.25, '#d8b070'); G.ring(c, 0, 0, 16, '#e8a050', 1.6) };
+/* 건틀릿·맨손 기본 공격은 찌르듯 내지르는 주먹 동작 */
+const _basicPose18s = basicPose; basicPose = function (p) { const wi = weaponInfo(); if (wi.wtKey === 'gauntlet' || wi.wtKey === 'fist') { p.atkAlt = !p.atkAlt; return 'thrust' } return _basicPose18s(p) };
+
+/* =====================================================================
+   18차-16: 포탑 확장 (전투 기술자 「포탑」 갈래 새로 추가)
+   기존 「장치」 갈래의 공격 포탑 2종(자동 석궁 포탑 · 중포 포탑)에 더해
+     · 수리 포탑   — 반경 안 아군(나·동료) 체력을 초마다 회복
+     · 방벽 포탑   — 반경 안의 나에게 3초마다 보호막, 날아오는 적 투사체를 몸으로 막는다
+     · 고무 포탑   — 반경 안에 있으면 공격력·공격 속도 증가
+     · 교란 포탑   — 반경 안 적을 느리게 하고 표식(받는 피해 증가)을 새긴다
+   · 같은 종류 포탑은 하나만 — 다시 세우면 앞의 것이 철거된다.
+   · 모든 포탑: 효과 반경 표시, 남은 시간 막대, 종류마다 다른 모양.
+   ===================================================================== */
+SK('engineer', '포탑', 0, 'e_healturret', '수리 포탑', 'active', { mp: 20, cd: 18, eff: { k: 'summon', kind: 'healT', dur: R5(10, 16), mult: R5(.012, .03) } }, '{dur}초간 반경 4.5칸 안의 아군 체력을 초마다 최대 체력의 {mult}만큼 회복.');
+SK('engineer', '포탑', 1, 'e_guardturret', '방벽 포탑', 'active', { mp: 22, cd: 20, eff: { k: 'summon', kind: 'guardT', dur: R5(10, 16), mult: R5(.06, .14) } }, '{dur}초간 반경 4칸 안의 나에게 3초마다 최대 체력 {mult}의 보호막. 근처로 날아오는 적 투사체를 막는다.');
+SK('engineer', '포탑', 2, 'e_buffturret', '고무 포탑', 'active', { mp: 24, cd: 22, eff: { k: 'summon', kind: 'buffT', dur: R5(10, 16), mult: R5(.1, .25) } }, '{dur}초간 반경 4칸 안에 있으면 공격력 +{mult} · 공격 속도 증가.');
+SK('engineer', '포탑', 3, 'e_hexturret', '교란 포탑', 'active', { mp: 26, cd: 22, eff: { k: 'summon', kind: 'hexT', dur: R5(10, 16), mult: R5(.15, .35) } }, '{dur}초간 반경 4.5칸 안의 적을 35% 둔화시키고, 받는 피해 +{mult} 표식을 새긴다.');
+const TUR18 = {
+  turret: { ko: '자동 석궁 포탑', r: 8, col: '#e0c060' }, cannon: { ko: '중포 포탑', r: 9, col: '#ff9a50' },
+  healT: { ko: '수리 포탑', r: 4.5, col: '#7fe08a' }, guardT: { ko: '방벽 포탑', r: 4, col: '#8fc0ff' },
+  buffT: { ko: '고무 포탑', r: 4, col: '#ffcf5a' }, hexT: { ko: '교란 포탑', r: 4.5, col: '#c08aff' } };
+const _updateSummons18t = updateSummons; updateSummons = function (dt) {
+  // 같은 종류는 가장 최근 것 하나만
+  const seen = {}; for (let i = W.summons.length - 1; i >= 0; i--) { const s = W.summons[i]; if (!TUR18[s.kind]) continue; if (s.max18 === undefined) { s.max18 = s.t; s.r18 = TUR18[s.kind].r } if (seen[s.kind]) { s.t = 0; fx.push({ type: 'burst', x: s.x, y: s.y, t: 0, c: '#9a9a9a' }) } seen[s.kind] = 1 }
+  const p = W.p, inR = (s, o) => Math.hypot(o.x - s.x, o.y - s.y) < s.r18;
+  for (const s of W.summons) { if (!TUR18[s.kind] || s.t <= 0) continue; s.tk18 = (s.tk18 || 0) - dt; s.spin18 = (s.spin18 || 0) + dt;
+    switch (s.kind) {
+      case 'healT': if (s.tk18 <= 0) { s.tk18 = 1; let any = false;
+          if (inR(s, p) && S.hp > 0 && S.hp < ST.hp) { const h = Math.max(1, Math.round(ST.hp * s.mult * (1 + (ST.healPct || 0)) * (S.status.curse ? .5 : 1))); S.hp = Math.min(ST.hp, S.hp + h); fx.push({ type: 'text', x: p.x, y: p.y - .3, t: 0, txt: '+' + h, c: '#8fe09a', small: true }); any = true }
+          for (const a of W.mons) if (a.ally && !a.dead && inR(s, a) && a.hp < a.maxHp) { a.hp = Math.min(a.maxHp, a.hp + a.maxHp * s.mult * 1.5); any = true }
+          if (any) fx.push({ type: 'ring', x: s.x, y: s.y, t: 0, r: 1.2, c: '#7fe08a' }) } break;
+      case 'guardT': if (s.tk18 <= 0) { s.tk18 = 3; if (inR(s, p) && S.hp > 0) { const sh = Math.round(ST.hp * s.mult * (1 + (ST.shieldEff || 0))); if ((p.shield || 0) < sh) { p.shield = sh; p.shieldT = Math.max(p.shieldT || 0, 3.5); fx.push({ type: 'ring', x: p.x, y: p.y, t: 0, r: 1.1, c: '#9fc8ff' }) } } }
+        for (const pr of W.projs) if (pr.own === 'm' && pr.life > 0 && Math.hypot(pr.x - s.x, pr.y - s.y) < .9) { pr.life = 0; fx.push({ type: 'text', x: s.x, y: s.y - .5, t: 0, txt: '막음', c: '#9fc8ff', small: true }); s.flash18 = .15 } break;
+      case 'buffT': if (inR(s, p)) { S.buffs.turret18 = { t: .5, mods: { atkMul: 1 + s.mult, aspdAdd: s.mult * .5 } } } break;
+      case 'hexT': if (s.tk18 <= 0) { s.tk18 = 1.2; let n = 0; for (const m of W.mons) if (hostileTo(m) && !m.obj && inR(s, m)) { applyStatusM(m, 'slow', 1.6, .35); applyStatusM(m, 'mark', 1.6, s.mult); n++ } if (n) fx.push({ type: 'ring', x: s.x, y: s.y, t: 0, r: s.r18, c: 'rgba(190,140,255,.7)' }) } break }
+    if (s.flash18 > 0) s.flash18 -= dt }
+  _updateSummons18t(dt) };
+/* 그리기: 종류마다 다른 포탑 + 효과 반경 + 남은 시간 */
+function drawTurret18(c, sm, s, wt) { const T = TUR18[sm.kind]; if (!T) return false; const z = 1.3, col = T.col, k = sm.max18 ? Math.max(0, sm.t / sm.max18) : 1, t = (sm.spin18 || 0);
+  // 효과 반경 (바닥에 얇게)
+  c.save(); c.globalAlpha = .18 + (sm.t < 2 ? Math.sin(t * 12) * .08 : 0); c.strokeStyle = col; c.lineWidth = 1.5; c.setLineDash([6, 6]); c.beginPath(); c.ellipse(s.x, s.y, (sm.r18 || T.r) * TW / 2, (sm.r18 || T.r) * TH / 2, 0, 0, 7); c.stroke(); c.setLineDash([]); c.globalAlpha = .06; c.fillStyle = col; c.fill(); c.restore();
+  c.save(); c.translate(s.x, s.y); c.scale(z, z);
+  // 다리 셋 + 받침
+  c.strokeStyle = '#3a3026'; c.lineWidth = 2.2; for (const [x, y] of [[-9, 3], [9, 3], [0, 6]]) { c.beginPath(); c.moveTo(0, -8); c.lineTo(x, y); c.stroke() }
+  c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(0, 3, 12, 5, 0, 0, 7); c.fill();
+  c.fillStyle = '#5a4a3a'; c.beginPath(); c.roundRect(-7, -12, 14, 6, 2); c.fill(); c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = 1; c.stroke();
+  const fl = sm.flash18 > 0 ? '#ffffff' : null, a = sm.face || 0, fc = Math.cos(a) - Math.sin(a) >= 0 ? 1 : -1;
+  switch (sm.kind) {
+    case 'turret': case 'cannon': { const big = sm.kind === 'cannon'; c.save(); c.translate(0, -15); c.scale(fc, 1); c.fillStyle = big ? '#4a4a52' : '#8a6a3a'; c.beginPath(); c.roundRect(-6, -5, 12, 9, 2); c.fill(); c.stroke(); c.fillStyle = big ? '#2a2a30' : '#a8acb0'; c.fillRect(2, big ? -4 : -2, big ? 14 : 12, big ? 6 : 2.6);
+      if (!big) { c.strokeStyle = '#c8b090'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(6, -7); c.quadraticCurveTo(10, -1, 6, 5); c.stroke() } else { c.fillStyle = '#1a1a1e'; c.beginPath(); c.arc(16, -1, 2.6, 0, 7); c.fill() } c.restore(); break }
+    case 'healT': { c.fillStyle = fl || '#e8ecef'; c.beginPath(); c.arc(0, -19, 7, 0, 7); c.fill(); c.strokeStyle = '#3a5a3a'; c.stroke(); c.fillStyle = '#3ac04a'; c.fillRect(-1.6, -24, 3.2, 10); c.fillRect(-5, -20.6, 10, 3.2);
+      c.globalAlpha = .5 + Math.sin(t * 4) * .3; c.strokeStyle = col; c.lineWidth = 1.5; c.beginPath(); c.arc(0, -19, 10 + Math.sin(t * 4) * 1.5, 0, 7); c.stroke(); c.globalAlpha = 1; break }
+    case 'guardT': { c.fillStyle = fl || '#6a8ab0'; c.beginPath(); c.moveTo(-8, -26); c.lineTo(8, -26); c.lineTo(8, -16); c.quadraticCurveTo(0, -7, -8, -16); c.closePath(); c.fill(); c.strokeStyle = '#2a3a5a'; c.lineWidth = 1.2; c.stroke(); c.fillStyle = '#c8dcff'; c.fillRect(-1, -24, 2, 12);
+      c.globalAlpha = .35; c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(0, -18, 13, Math.PI * 1.1 + Math.sin(t * 2) * .2, Math.PI * 1.9 + Math.sin(t * 2) * .2); c.stroke(); c.globalAlpha = 1; break }
+    case 'buffT': { c.fillStyle = '#7a5a2a'; c.fillRect(-1.2, -34, 2.4, 22); c.fillStyle = fl || '#e04a2a'; c.beginPath(); c.moveTo(1, -34); c.quadraticCurveTo(9, -31 + Math.sin(t * 6) * 2, 15, -32 + Math.sin(t * 6 + 1) * 2); c.lineTo(15, -24); c.quadraticCurveTo(9, -23 + Math.sin(t * 6) * 2, 1, -25); c.fill();
+      c.fillStyle = '#ffd860'; G.star(c, 7, -29, 2.6, 5, '#ffd860'); break }
+    case 'hexT': { c.save(); c.translate(0, -20); c.rotate(t * 2); c.fillStyle = fl || '#7a4ab0'; c.beginPath(); for (let i = 0; i < 6; i++) { const q = i / 6 * 6.283; c.lineTo(Math.cos(q) * 7, Math.sin(q) * 7) } c.closePath(); c.fill(); c.strokeStyle = '#2a1a3a'; c.lineWidth = 1; c.stroke(); c.restore();
+      c.fillStyle = '#e0c8ff'; c.beginPath(); c.arc(0, -20, 2.6 + Math.sin(t * 5), 0, 7); c.fill(); break } }
+  // 남은 시간
+  c.fillStyle = 'rgba(0,0,0,.6)'; c.fillRect(-11, -40, 22, 4); c.fillStyle = k < .2 ? '#ff7050' : col; c.fillRect(-10, -39, 20 * k, 2);
+  c.restore(); return true }
+SKILL_ART.e_healturret = c => { G.turret(c, -2, 6, .9); c.fillStyle = '#3ac04a'; c.fillRect(2, -16, 4, 12); c.fillRect(-2, -12, 12, 4) };
+SKILL_ART.e_guardturret = c => { G.turret(c, -2, 6, .9); G.shield(c, 6, -8, .8, '#8fb0e0') };
+SKILL_ART.e_buffturret = c => { G.turret(c, -2, 6, .9); c.fillStyle = '#e04a2a'; c.beginPath(); c.moveTo(4, -16); c.lineTo(16, -12); c.lineTo(4, -6); c.fill(); c.fillStyle = '#7a5a2a'; c.fillRect(2, -17, 2, 14) };
+SKILL_ART.e_hexturret = c => { G.turret(c, -2, 6, .9); G.swirl(c, 7, -9, 8, 1.4, '#c08aff', 2) };
+
+/* =====================================================================
+   18차-17: 보스 페이즈 개편
+   · 던전 보스: 3페이즈, 최종 보스(빙관의 마왕): 4페이즈. 페이즈마다 체력 막대가 따로 있다.
+     한 페이즈의 체력을 다 깎으면 쓰러지지 않고 「힘을 되찾는」 전환(약 3.5초, 무적):
+     빛기둥·고리가 솟고 체력 막대가 0 → 가득으로 차오르며, 끝날 때 주변을 밀쳐내는 충격파(바닥 예고 → 피하기).
+     다음 페이즈는 공격력이 오르고, 2페이즈부터 광역 패턴, 마지막 페이즈는 격노.
+   · 필드 보스: 체력이 절반 아래로 떨어지면 2페이즈 — 잠깐 포효하며 자세를 바꾸고(색이 붉어짐), 광역 패턴을 섞어 쓴다. 체력은 이어진다.
+   · 전투 시간: 측정(적정 레벨·적정 장비, 기본 공격 + 기술 1.5배 가정)에서 1~2지역 던전 보스는 약 20~35초에 쓰러졌다.
+     페이즈당 체력을 기존 보스 체력의 1.6배로 두어(3페이즈 합계 4.8배) 약 2~3분이 되게 했다. 최종 보스는 페이즈당 1.5배 × 4.
+     필드 보스는 체력 1.4배.
+   ===================================================================== */
+const BOSS18 = { dungeon: { n: 3, hp: 1.6 }, final: { n: 4, hp: 1.5 }, field: { hp: 1.4 }, trans: 3.5 };
+function bossType18(m) { if (!m || !m.M || m.ally || m.dummy) return null; if (m.kind === 'demonking') return 'final'; if (m.dgBoss) return 'dungeon'; if (m.M.boss) return 'field'; return null }
+const _spawnMon18b = spawnMon; spawnMon = function (kind, lv, x, y, o = {}) { const m = _spawnMon18b.apply(this, arguments); try { const bt = bossType18(m);
+    if (bt === 'dungeon' || bt === 'final') { const C = BOSS18[bt]; m.phN18 = C.n; m.ph18 = 1; m.phase = 1; m.maxHp = m.hp = Math.round(m.maxHp * C.hp); m.btype18 = bt }
+    else if (bt === 'field' && !(o && o.noBoost18)) { m.maxHp = m.hp = Math.round(m.maxHp * BOSS18.field.hp); m.btype18 = 'field' } } catch (e) { } return m };
+/* 마지막 페이즈 전에는 죽지 않고 전환 */
+const _killMon18b = killMon; killMon = function (m, o) { if (m && !m.dead && m.phN18 && m.ph18 < m.phN18) { if (!m.tr18) bossTransStart18(m); m.hp = Math.max(1, m.hp); return } return _killMon18b.apply(this, arguments) };
+const _finishKill18b = finishKill; finishKill = function (m) { if (m && !m.dead && m.phN18 && m.ph18 < m.phN18) { if (!m.tr18) bossTransStart18(m); m.hp = Math.max(1, m.hp); return } return _finishKill18b.apply(this, arguments) };
+/* 전환 중에는 무적 */
+const _dealDamage18b = dealDamage; dealDamage = function (m, mult, o = {}) { if (m && m.tr18 > 0) { if (o.fromPlayer && (!m.immT18 || W.t - m.immT18 > .6)) { m.immT18 = W.t; fx.push({ type: 'text', x: m.x, y: m.y - .5, t: 0, txt: '무적', c: '#ffe9a0', small: true }) } return 0 } return _dealDamage18b.apply(this, arguments) };
+function bossTransStart18(m) { const nx = m.ph18 + 1, last = nx >= m.phN18, M = m.M;
+  m.tr18 = BOSS18.trans; m.trD18 = BOSS18.trans; m.hp = 1; m.trHp0 = 1; m.pending = null; m.wind = 0; cancelTeleOf(m); m.st = {}; m.aggro = true; W.bossEngaged = m;
+  showBanner(M.name, `${nx}페이즈${last ? ' — 마지막' : ''} · 힘을 되찾는다!`, 'boss'); log(`[보스] ${M.name} — ${nx}/${m.phN18} 페이즈. 체력을 되찾는 동안은 공격이 통하지 않는다. 충격파를 피하자!`, 'w'); sfx('roar');
+  // 끝날 때 주변을 밀쳐내는 충격파 (바닥 예고)
+  addTele({ type: 'circle', x: m.x, y: m.y, r: 3.4 }, BOSS18.trans - .15, { dmg: mPow(m) * 1.6, src: M.name, owner: null, knock: 2.4, sfx: 'slam', keep: true });
+  fx.push({ type: 'burst', x: m.x, y: m.y, t: 0, c: last ? '#ff5040' : '#ffd070' }) }
+function bossTransTick18(m, dt) { m.tr18 -= dt; const k = 1 - Math.max(0, m.tr18) / m.trD18, e = k * k * (3 - 2 * k); m.hp = Math.max(1, Math.round(m.maxHp * e)); m.state = 'chase'; m.flash = Math.sin(W.t * 18) > .6 ? .05 : 0;
+  m.ringT18 = (m.ringT18 || 0) - dt; if (m.ringT18 <= 0) { m.ringT18 = .45; fx.push({ type: 'ring', x: m.x, y: m.y, t: 0, r: 1.2 + k * 1.6, c: m.ph18 + 1 >= m.phN18 ? '#ff6040' : '#ffe08a' }) }
+  if (m.tr18 <= 0) { m.tr18 = 0; m.hp = m.maxHp; m.ph18++; m.phase = Math.min(3, m.ph18); const last = m.ph18 >= m.phN18;
+    m.atk *= 1.1; if (last) { m.atk *= 1.08; m.spd *= 1.12; m.enraged = true }
+    try { bossPhaseStart(m, last ? 3 : 2) } catch (e) { } m.recover = .6; m.phT = 2.5;
+    fx.push({ type: 'burst', x: m.x, y: m.y, t: 0, c: last ? '#ff4030' : '#ffd070' }); shake = Math.max(shake, 1) } }
+const _updateMon18b = updateMon; updateMon = function (m, dt) { if (m.tr18 > 0) { bossTransTick18(m, dt); return } return _updateMon18b(m, dt) };
+/* 도망쳐서 보스가 제자리로 돌아가면 페이즈도 처음부터 */
+const _giveUp18b = giveUp; giveUp = function (m) { const r = _giveUp18b.apply(this, arguments); if (m && m.phN18) { m.ph18 = 1; m.phase = 1; m.tr18 = 0; m.enraged = false } return r };
+/* 단계 판정 다시 쓰기: 필드 보스는 50% 에서 2페이즈 / 다페이즈 보스는 위의 전환으로만 / 정예는 예전처럼 66%·33% */
+bossPhaseTick = function () { for (const m of W.mons) { if (m.dead || m.ally || !m.aggro || !(m.M.boss || (m.M.elite && m.lv >= 10))) continue; m.phase = m.phase || 1;
+    if (m.phN18) { if (m.tr18 > 0) continue }
+    else if (m.M.boss) { if (m.phase < 2 && m.hp / m.maxHp < .5) { m.phase = 2; fieldPhase18(m) } }
+    else { const f = m.hp / m.maxHp, ph = f < .33 ? 3 : f < .66 ? 2 : 1; if (ph > m.phase) { m.phase = ph; bossPhaseStart(m, ph) } }
+    if (m.phase >= 2 && m.M.boss) { m.phT = (m.phT === undefined ? 4 : m.phT) - 1 / 30; if (m.phT <= 0 && !m.pending) { const last = m.phN18 ? m.ph18 >= m.phN18 : false; m.phT = last ? 5.5 : m.phN18 ? 7.5 : 8;
+        // 필드 보스 2페이즈·다페이즈 보스 중간: 충격파와 불기둥을 번갈아 / 마지막: 둘 다 자주
+        const save = m.phase; m.altP18 = !m.altP18; m.phase = last ? (m.altP18 ? 3 : 2) : (m.altP18 ? 2 : 3); try { bossPhaseAttack(m) } catch (e) { } m.phase = save } } } };
+function fieldPhase18(m) { const M = m.M; m.recover = 1.2; m.pending = null; cancelTeleOf(m); m.atk *= 1.15; m.spd *= 1.08; m.enraged = true; m.phT = 2;
+  showBanner(M.name, '2페이즈 — 자세를 바꾼다!', 'boss'); log(`[보스] ${M.name} 2페이즈 — 광역 공격을 섞어 쓴다`, 'w'); sfx('roar'); fx.push({ type: 'burst', x: m.x, y: m.y, t: 0, c: '#ff7040' }); fx.push({ type: 'text', x: m.x, y: m.y - .8, t: 0, txt: '포효!', c: '#ff9060' }) }
+/* 그리기: 전환 중 빛기둥 + 보호막 */
+const _drawMonster18b = drawMonster; drawMonster = function (c, x, y, m, o = {}) { if (m && m.tr18 > 0 && !o.icon && !o.sil) { const k = 1 - m.tr18 / m.trD18, sz = (m.size || m.M.size || 1), last = m.ph18 + 1 >= m.phN18, col = last ? '255,80,60' : '255,220,120', h = 120 * sz;
+    c.save(); const g = c.createLinearGradient(0, y - h, 0, y); g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(1, `rgba(${col},${.25 + .2 * Math.sin(W.t * 10)})`); c.fillStyle = g; c.fillRect(x - 22 * sz, y - h, 44 * sz, h);
+    c.strokeStyle = `rgba(${col},.75)`; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y - 18 * sz, 26 * sz, 30 * sz, 0, 0, 7); c.stroke();
+    c.globalAlpha = .5; for (let i = 0; i < 6; i++) { const a = W.t * 2 + i, r = 22 * sz, yy = y - ((W.t * 40 + i * 20) % (60 * sz)); c.fillStyle = `rgb(${col})`; c.fillRect(x + Math.cos(a) * r - 1.5, yy, 3, 3) } c.restore() }
+  return _drawMonster18b.apply(this, arguments) };
+/* 보스 체력 막대: 페이즈 표시 · 전환 중 표시 */
+const _updateHUD18b = updateHUD; updateHUD = function () { _updateHUD18b.apply(this, arguments); try { const B = W && W.bossEngaged, bb = document.getElementById('bossbar'); if (!B || !bb || bb.hidden) return;
+    let ph = bb.querySelector('.bph18'); if (!ph) { ph = document.createElement('div'); ph.className = 'bph18'; bb.insertBefore(ph, bb.querySelector('.bb-bar')) }
+    const N = B.phN18 || (B.M.boss ? 2 : 0), cur = B.phN18 ? B.ph18 : (B.phase || 1); ph.hidden = !N;
+    if (N) { const html = `${Array.from({ length: N }, (_, i) => `<u class="${i < cur - 1 ? 'done' : i === cur - 1 ? 'on' : ''}"></u>`).join('')}<em>${B.tr18 > 0 ? `${cur + 1}페이즈 준비 — 체력 회복 중 (무적)` : `${cur}/${N} 페이즈`}${!B.phN18 && N === 2 && cur < 2 ? ' · 체력 50%에서 변화' : ''}</em>`; if (ph._h !== html) { ph._h = html; ph.innerHTML = html } }
+    bb.classList.toggle('trans18', B.tr18 > 0) } catch (e) { } };
+
+/* =====================================================================
+   18차-18: NPC 움직임·시간 통일 (게임 서버 접속 중일 때만)
+   · 시간: 서버 시계 기준으로 모두 같은 하루 시각 → NPC 일정(출근·귀가·장소)이 같다.
+   · 구역 주인(그 구역에 가장 먼저 들어온 사람)의 게임이 NPC·동물을 움직이고, 0.2초마다 바뀐 것만(2초마다 전체) 서버로 보낸다.
+     나머지 사람은 NPC 를 스스로 움직이지 않고 받은 위치로 부드럽게 따라간다. 주민끼리의 대화 말풍선도 주인 것을 그대로 보여 준다.
+   · 주인이 나가면 서버가 다음 사람을 주인으로 정하고, 그 사람의 게임이 지금 자리에서부터 이어서 움직인다.
+   ===================================================================== */
+const NS = { host: null, room: null, tgt: {}, got: false, last: {}, sendT: 0, fullT: 0, srvOff: null };
+const nsHost18 = () => NET.mode18 === 'ws' && NET.ok && W && WSN.room === W.zone && NS.room === W.zone && NS.host === WSN.me;
+const nsPuppet18 = () => NET.mode18 === 'ws' && NET.ok && W && WSN.room === W.zone && NS.room === W.zone && NS.host && NS.host !== WSN.me && NS.got;
+/* 같은 시각 */
+const _advanceClock18n = advanceClock; advanceClock = function (dt) { if (NET.mode18 === 'ws' && NET.ok && NS.srvOff !== null) { S.clock = (((Date.now() + NS.srvOff) / 1000) % CFG.dayLength) / CFG.dayLength * 24; return } return _advanceClock18n(dt) };
+/* 받는 쪽: 스스로 움직이지 않고 따라간다 */
+function nsApply18(dt) { const k = Math.min(1, dt * 8);
+  for (const n of W.npcs) { const T = NS.tgt[n.id]; if (!T) continue; const dx = T.x - n.x, dy = T.y - n.y, d = Math.hypot(dx, dy);
+    if (d > 4 || !n.seen18) { n.x = T.x; n.y = T.y; n.seen18 = true } else { n.x += dx * k; n.y += dy * k }
+    n.face = T.f; n.moving = !!T.mv; if (n.moving) n.walk = (n.walk || 0) + dt * 6; n.anim = T.anim || 'idle'; (n.life || (n.life = { next: 1e9, turn: 1e9 })).act = T.act || null; n.visible = !!T.vis; n.path = [] } }
+const _updateNpcs18n = updateNpcs; updateNpcs = function (dt, snap) { if (nsPuppet18() && !snap) return nsApply18(dt); return _updateNpcs18n(dt, snap) };
+const _critterTick18n = critterTick; critterTick = function (dt) { if (nsPuppet18()) return; return _critterTick18n(dt) };
+const _npcChatTick18n = npcChatTick; npcChatTick = function (dt) { if (!W || W.kind !== 'town') return;
+  if (nsPuppet18()) { const now = W.t; W.chats14 = (W.chats14 || []).filter(c => now - c.t0 < c.dur); return }
+  const n0 = (W.chats14 || []).length; _npcChatTick18n(dt);
+  if (nsHost18() && W.chats14 && W.chats14.length > n0) { const ch = W.chats14[W.chats14.length - 1]; if (ch && ch.a && ch.b) wsSend18({ t: 'nchat', a: ch.a.id, b: ch.b.id, lines: ch.lines, dur: ch.dur }) } };
+/* 주인: 바뀐 것만 보낸다 */
+function nsSend18(now) { if (now - NS.sendT < 200) return; NS.sendT = now; const full = now - NS.fullT > 2000; if (full) NS.fullT = now; const l = [];
+  for (const n of W.npcs) { const a = [n.id, +n.x.toFixed(2), +n.y.toFixed(2), n.face === -1 ? -1 : 1, n.moving ? 1 : 0, n.anim || 'idle', (n.life && n.life.act) || '', n.visible ? 1 : 0], key = a.join('|');
+    if (!full && NS.last[n.id] === key) continue; NS.last[n.id] = key; l.push(a) }
+  for (let i = 0; i < l.length; i += 200) wsSend18({ t: 'npcs', full, l: l.slice(i, i + 200) }) }
+const _netTick18n = netTick; netTick = function (dt) { _netTick18n(dt); try { if (nsHost18() && W.npcs.length) nsSend18(performance.now()) } catch (e) { } };
+/* 서버 메시지 */
+const _wsOn18n = wsOn18; wsOn18 = function (m) { _wsOn18n(m);
+  try { switch (m.t) {
+    case 'welcome': NS.srvOff = (m.serverTime || Date.now()) - Date.now(); NS.got = false; NS.host = null; break;
+    case 'room': NS.tgt = {}; NS.got = false; NS.last = {}; NS.fullT = 0; if (W) for (const n of W.npcs) n.seen18 = false; break;
+    case 'rhost': if (m.room !== WSN.room && !(W && m.room === W.zone)) break; const was = NS.host; NS.host = m.id; NS.room = m.room;
+      if (m.id === WSN.me && was !== WSN.me) { NS.last = {}; NS.fullT = 0; if (W) for (const n of W.npcs) { n.path = []; if (n.life) { n.life.ax = null; n.life.next = W.t + 1 } } } break;
+    case 'npcs': for (const a of m.l) NS.tgt[a[0]] = { x: a[1], y: a[2], f: a[3], mv: a[4], anim: a[5], act: a[6], vis: a[7] }; if (m.full || Object.keys(NS.tgt).length) NS.got = true; break;
+    case 'nchat': { if (!W || !nsPuppet18()) break; const a = W.npcs.find(n => n.id === m.a), b = W.npcs.find(n => n.id === m.b); if (!a || !b) break; W.chats14 = W.chats14 || []; W.chats14.push({ a, b, lines: m.lines, t0: W.t, dur: m.dur }); break } } } catch (e) { console.warn('npcsync', e) } };
+if (typeof window !== 'undefined' && window.__fb) Object.assign(window.__fb, { NS });
 
 </script>
 </body></html>
