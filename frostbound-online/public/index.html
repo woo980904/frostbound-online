@@ -11398,6 +11398,9 @@ function arm16(c, o, H, fl, ang, front, col, skin) { const mus = (o.bMus || 0) *
   c.translate(0, up); c.fillStyle = col; c.beginPath(); c.arc(0, 0, w / 2, 0, 7); c.fill(); c.rotate(FX ? FX[1] : -bend); c.fillStyle = col; seg(lo); // 18차: 뒤팔도 팔꿈치가 앞으로 굽는다(역관절 수정)
   if (armored && !o.sil) { c.fillStyle = fl ? '#fff' : shade(o.c1 || col, .28); c.fillRect(-w / 2 - .3, lo * .35, w + .6, 1.6); c.fillRect(-w / 2 - .3, lo * .7, w + .6, 1.6) }
   c.translate(0, lo); c.fillStyle = fl ? '#fff' : (armored ? shade(o.c1 || col, -.1) : skin); c.beginPath(); c.arc(0, .6, 2.1 + mus * .2, 0, 7); c.fill();
+  if (o.glove18 && !o.sil) { const gc = fl ? '#ffffff' : o.glove18, r = 2.55 + mus * .2; // 건틀릿: 양손에 낀 장갑 (손목 가죽 + 금속 주먹 + 마디 징)
+    c.fillStyle = fl ? '#fff' : '#5a3a24'; c.fillRect(-w / 2 - .5, -2.6, w + 1, 2.4); c.fillStyle = shade(gc, -.3); c.beginPath(); c.arc(0, .9, r + .35, 0, 7); c.fill(); c.fillStyle = gc; c.beginPath(); c.arc(0, .7, r, 0, 7); c.fill();
+    c.fillStyle = shade(gc, .45); for (let k = -1; k <= 1; k++) c.fillRect(k * 1.25 - .45, 2.3, .9, 1); if (o.gloveGlow18) { c.globalAlpha = .45; c.fillStyle = o.gloveGlow18; c.beginPath(); c.arc(0, .8, r + 1.2, 0, 7); c.fill(); c.globalAlpha = 1 } }
   return { bend: FX ? 0 : bend * (front ? 1 : 0), rot: FX ? FX[0] + FX[1] : front ? -a + swing - bend : ang - swing - bend } }
 /* ---------------- 몬스터: 네발짐승 ---------------- */
 function mvOf16(m, t) { // 18차: 걸음 위상은 실제로 움직인 거리 ÷ 보폭(몸 크기)으로 — 큰 몸은 느리고 묵직하게, 화면 주사율·여러 번 그리기와 무관
@@ -13204,6 +13207,11 @@ SKILL_ART.ws_gt_upper = c => { c.save(); c.rotate(-.6); fistGlyph18(c, 0, 0, 1.1
 SKILL_ART.ws_gt_master = c => { fistGlyph18(c, 0, 2, 1.25, '#d8b070'); G.ring(c, 0, 0, 16, '#e8a050', 1.6) };
 /* 건틀릿·맨손 기본 공격은 찌르듯 내지르는 주먹 동작 */
 const _basicPose18s = basicPose; basicPose = function (p) { const wi = weaponInfo(); if (wi.wtKey === 'gauntlet' || wi.wtKey === 'fist') { p.atkAlt = !p.atkAlt; return 'thrust' } return _basicPose18s(p) };
+/* 건틀릿은 손에 든 무기가 아니라 양손에 끼는 장갑으로 그린다 (손 크기에 맞게, 무기를 넣어도 손에 그대로) */
+{ const _dh = drawHumanoid; drawHumanoid = function (c, x, y, o) {
+    if (o && o.weapon === 'gauntlet') o = Object.assign({}, o, { weapon: null, glove18: o.wCol || '#b8bec6', gloveGlow18: o.wGlow || null, wParts: null });
+    else if (o && o.sheathW18 && o.sheathW18.w === 'gauntlet') o = Object.assign({}, o, { glove18: o.sheathW18.col || '#b8bec6', sheathW18: Object.assign({}, o.sheathW18, { w: null }) });
+    return _dh(c, x, y, o) } }
 
 /* =====================================================================
    18차-16: 포탑 확장 (전투 기술자 「포탑」 갈래 새로 추가)
@@ -13366,6 +13374,39 @@ const _wsOn18n = wsOn18; wsOn18 = function (m) { _wsOn18n(m);
     case 'npcs': for (const a of m.l) NS.tgt[a[0]] = { x: a[1], y: a[2], f: a[3], mv: a[4], anim: a[5], act: a[6], vis: a[7] }; if (m.full || Object.keys(NS.tgt).length) NS.got = true; break;
     case 'nchat': { if (!W || !nsPuppet18()) break; const a = W.npcs.find(n => n.id === m.a), b = W.npcs.find(n => n.id === m.b); if (!a || !b) break; W.chats14 = W.chats14 || []; W.chats14.push({ a, b, lines: m.lines, t0: W.t, dur: m.dur }); break } } } catch (e) { console.warn('npcsync', e) } };
 if (typeof window !== 'undefined' && window.__fb) Object.assign(window.__fb, { NS });
+
+/* =====================================================================
+   18차-19: 파티원 위치를 지도에 표시 (게임 서버 접속 + 파티 중)
+   · 같은 구역(마을·들판·던전…)에 있으면: 미니맵·지역 지도(L)에 정확한 위치 — 같은 구역은 0.1초 단위 위치 신호로 실시간
+   · 다른 구역에 있으면: 대륙 지도(M)에 그 사람이 있는 지역만 표시 (서버가 1초마다 알려 준다)
+   · 접속이 끊긴 파티원은 표시하지 않는다.
+   ===================================================================== */
+const PM18 = { pos: {} }; // id → { z, x, y, t }
+const PCOL18 = ['#5fe08a', '#6ac8ff', '#ffb04a', '#ff7ac0', '#c49aff', '#f0e060'];
+function pmMates18() { if (!CO.party || NET.mode18 !== 'ws' || !NET.ok) return []; const out = [];
+  CO.party.members.forEach((m, i) => { if (m.id === WSN.me || !m.on) return; const v = NET.view[m.id], p = PM18.pos[m.id];
+    // 같은 구역이면 실시간 위치 신호(보간된 화면 위치) 우선
+    if (v && v.P && W && v.P.z === W.zone) out.push({ id: m.id, nm: m.nm, col: PCOL18[i % PCOL18.length], z: W.zone, x: v.x, y: v.y, here: true });
+    else if (p && Date.now() - p.t < 8000) out.push({ id: m.id, nm: m.nm, col: PCOL18[i % PCOL18.length], z: p.z, x: p.x, y: p.y, here: W && p.z === W.zone }) });
+  return out }
+function pmDot18(c, x, y, r, col, label) { c.save(); c.fillStyle = 'rgba(0,0,0,.7)'; c.beginPath(); c.arc(x, y, r + 1.6, 0, 7); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  if (label) { c.font = '700 11px "Noto Sans KR",sans-serif'; c.textAlign = 'center'; c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,.85)'; c.strokeText(label, x, y - r - 4); c.fillStyle = col; c.fillText(label, x, y - r - 4) } c.restore() }
+/* 미니맵 */
+const _drawMinimap18p = drawMinimap; drawMinimap = function () { _drawMinimap18p.apply(this, arguments); try { const L = pmMates18().filter(m => m.here); if (!L.length) return; const mc = $('#mm'), c = mc.getContext('2d'), k = mc.width / W.map.w;
+    for (const m of L) pmDot18(c, m.x * k, m.y * k, 3, m.col, null) } catch (e) { } };
+/* 지역 지도: 열려 있는 동안 0.5초마다 다시 그려 실시간으로 */
+const _paintLocal18p = paintLocal; paintLocal = function () { _paintLocal18p.apply(this, arguments); try { const L = pmMates18().filter(m => m.here); if (!L.length) return; const cv = $('#localcv'); if (!cv) return; const x = cv.getContext('2d'), size = parseFloat(cv.style.width) || cv.width, k = size / W.map.w;
+    for (const m of L) pmDot18(x, m.x * k, m.y * k, 4.5, m.col, String(m.nm).slice(0, 8)) } catch (e) { } };
+/* 대륙 지도: 지역에 파티원 표시 (SVG 위에 덧그림) */
+function pmWorld18() { const svg = document.querySelector('.wm svg'); if (!svg) return; let g = svg.querySelector('#pmk18'); if (!g) { g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.id = 'pmk18'; g.setAttribute('pointer-events', 'none'); svg.appendChild(g) }
+  const by = {}; for (const m of pmMates18()) { let r; try { r = zoneRegion(m.z) } catch (e) { continue } if (!WM[r]) continue; (by[r] = by[r] || []).push(m) }
+  let h = ''; for (const [r, L] of Object.entries(by)) L.forEach((m, i) => { const cx = WM[r].l[0] - 30 + i * 13, cy = WM[r].l[1] + 30, kind = zoneKind(m.z), where = kind === 'town' ? '마을' : kind === 'dg' ? '던전' : kind === 'field' ? '들판' : '';
+    h += `<g><circle cx="${cx}" cy="${cy}" r="6.5" fill="${m.col}" stroke="#0a0f16" stroke-width="2"><animate attributeName="r" values="6;7.5;6" dur="1.6s" repeatCount="indefinite"/></circle><text x="${cx}" y="${cy + 19 + (i % 2) * 11}" text-anchor="middle" font-size="11" font-weight="700" fill="${m.col}" stroke="#0a0f16" stroke-width="3" paint-order="stroke">${esc(String(m.nm).slice(0, 8))}${where ? ' · ' + where : ''}</text></g>` });
+  if (g._h !== h) { g._h = h; g.innerHTML = h } }
+setInterval(() => { try { if (!W || !S || UI.screen !== 'game') return; if (UI.panel === 'local' && $('#localcv') && CO.party) paintLocal(); if (UI.panel === 'map') pmWorld18() } catch (e) { } }, 500);
+/* 서버 메시지 */
+const _wsOn18pm = wsOn18; wsOn18 = function (m) { _wsOn18pm(m); if (m && m.t === 'ppos') { const now = Date.now(); for (const a of m.l) PM18.pos[a[0]] = { z: a[1], x: a[2], y: a[3], t: now } } };
+if (typeof window !== 'undefined' && window.__fb) Object.assign(window.__fb, { PM18, pmMates18 });
 
 </script>
 </body></html>
