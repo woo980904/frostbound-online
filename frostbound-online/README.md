@@ -26,15 +26,26 @@ npm test                  # 자동 시험 (Node 22 이상)
 | `ALLOWED_ORIGINS` | (비움 = 모두 허용) | 접속을 허용할 페이지 출처, 쉼표로 구분 (예: `https://frostbound.onrender.com`) |
 | `MAX_CONN` | 300 | 동시 연결 상한 |
 | `ROOM_CAP` | 60 | 룸(구역) 하나의 인원 상한 |
+| `PARTY_XP` | `{"1":1,"2":0.7,"3":0.6,"4":0.5,"5":0.45,"6":0.4}` | 처치 보상 자격이 있는 파티 인원수 → 각자 받는 경험치 비율 (JSON, 바꾸고 싶은 것만 적어도 됨) |
+| `FORCE_DROP` | (비움) | `1` 이면 모든 드롭 100% — **시험용, 실제 서버에는 넣지 마세요** |
 
 비밀키·API 키는 쓰지 않습니다.
 
+## 파일
+- `server.js` — 접속·룸·이동·채팅·감정 표현 (1차, 그대로)
+- `game.js` — 2차: 장비 외형, 파티, 들판 몬스터 HP 공유, 파티 경험치, 개인 전리품, 퀘스트 공유, 거래
+- `catalog.json` — 게임 데이터에서 뽑은 장비 ID·몬스터·아이템·퀘스트 목록 (서버 검증용). 게임 데이터가 바뀌면 다시 만들어 함께 올립니다.
+- `data/kills.log`, `data/trades.log` — 처치 보상·거래 기록 (한 줄에 JSON 하나). Render 무료 플랜은 재시작하면 지워집니다.
+
 ## 프로토콜 (JSON 텍스트)
-클라이언트→서버: `hello{nm,lv,race,cls,lk,resume?}` · `join{room,x,y}` · `st{x,y,f,mv,ps,lv,lk?}` · `chat{m}` · `emote{k}` · `ping{ts}` · `act` (아직 미구현 → `not_implemented`)
-서버→클라이언트: `welcome{id,resume,online}` · `room{room,players}` · `pjoin{p}` · `pleave{id,why}` · `pst{id,…}` · `chat{id,nm,m,z}` · `emote{id,k}` · `fix{x,y}` · `pong` · `err{code,msg}`
+1차 — 클라이언트→서버: `hello{nm,lv,race,cls,lk,resume?}` · `join{room,x,y}` · `st{x,y,f,mv,ps,lv,lk?}` · `chat{m}` · `emote{k}` · `ping{ts}` · `act` (`not_implemented`)
+서버→클라이언트: `welcome` · `room{room,players}` · `pjoin{p}` · `pleave{id,why}` · `pst` · `chat` · `emote` · `fix{x,y}` · `pong` · `err{code,msg}`
+
+2차 — 클라이언트→서버: `eq{slots,look,race,sh,bag}` · `party{a:create|invite|accept|decline|leave|kick|disband|leader}` · `hp{hp,mhp}` · `madd{list}` · `mpos{l}` · `mhit{id,d}` · `mtake{id}` · `mgone{id}` · `pick{did}` · `qshare{qid}` · `qresp{to,qid,ok,why}` · `trade{a:req|answer|set|ready|confirm|verified|cancel}`
+서버→클라이언트: `peq` · `party{party}` · `pinv` · `pinv_x` · `php` · `info` · `mlist` · `host` · `madded` · `madd` · `mpos` · `mctl` · `mhp` · `mdie{id,kid}` · `mgone` · `mreward{kid,xp,gold,mult,party,contrib,loot}` · `picked` · `qoffer` · `qresp` · `tr_ask` · `tr_state` · `tr_verify` · `tr_done` · `tr_end`
 
 ## 무료 플랜 제한 (Render 문서 기준)
 - 15분 동안 HTTP 요청·WebSocket 메시지가 없으면 잠들고, 다음 접속 때 깨어나는 데 약 1분 걸립니다 (게임은 "서버 깨우는 중"으로 표시).
 - 워크스페이스당 월 750 무료 인스턴스 시간, 잠든 동안은 차감되지 않습니다.
-- Render 가 언제든 재시작할 수 있고, 디스크는 남지 않습니다 (이 서버는 상태를 메모리에만 두므로 상관없음).
+- Render 가 언제든 재시작할 수 있고, 디스크는 남지 않습니다. 파티·들판 몬스터·주울 전리품·진행 중 거래는 메모리에만 있어서 재시작하면 사라집니다(게임은 자동 재접속 후 들판을 다시 공유). 캐릭터·가방·퀘스트는 각자 브라우저에 저장됩니다.
 - 아웃바운드 트래픽은 워크스페이스 포함량에서 차감, 결제수단이 없으면 초과 시 그 달 동안 정지됩니다.

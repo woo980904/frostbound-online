@@ -4,13 +4,14 @@
    · 같은 주소에서 게임 페이지(public/index.html)도 내준다 → 브라우저는 https://<서버>/ 로 게임을 열고 wss://<서버>/ws 로 붙는다.
    · 서버가 하는 일: 접속·해제, 세션 ID, 룸(= 게임 구역) 입장·이동, 룸 안 플레이어 목록, 위치·방향·동작 상태 중계, 채팅·감정 표현 중계,
      끊김 감지(핑/퐁), 재접속(재개 토큰으로 같은 ID 유지), 입력값 검증·크기 제한·속도 제한.
-   · 전투·아이템·경험치·파티·거래는 아직 없다. 'act' 메시지는 not_implemented 로 거절한다(나중에 서버 권한 방식으로 이 자리에 붙인다).
+   · 2차(game.js): 장비 외형 동기화, 파티, 들판 몬스터 HP 공유, 파티 경험치, 개인 전리품, 퀘스트 공유, 거래. 'act' 는 여전히 not_implemented.
    환경변수: PORT(기본 8787), ALLOWED_ORIGINS(쉼표로 구분, 비우면 모든 출처 허용), MAX_CONN(기본 300), ROOM_CAP(기본 60)            */
 const http = require('http'), crypto = require('crypto'), fs = require('fs'), path = require('path');
 const PORT = +process.env.PORT || 8787, MAX_CONN = +process.env.MAX_CONN || 300, ROOM_CAP = +process.env.ROOM_CAP || 60;
 const ALLOWED = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 const PUB = path.join(__dirname, 'public'), START = Date.now();
 const log = (...a) => console.log(new Date().toISOString(), ...a);
+const G = require('./game');   // 멀티플레이 2차: 장비 외형·파티·몬스터·보상·퀘스트 공유·거래
 
 /* ------------------------------ 게임 상태 ------------------------------ */
 const sessions = new Map();   // id → session (연결이 끊겨도 RESUME_MS 동안 남는다)
@@ -23,16 +24,16 @@ const num = (v, lo, hi) => (typeof v === 'number' && isFinite(v)) ? Math.max(lo,
 function cleanLook(lk) { if (!lk || typeof lk !== 'object' || Array.isArray(lk)) return null; const o = {}; let n = 0;
   for (const k of LOOK_KEYS) { const v = lk[k]; if (v === undefined || v === null) continue; if (typeof v === 'number' && isFinite(v)) o[k] = Math.max(-100, Math.min(100, v)); else if (typeof v === 'boolean') o[k] = v; else if (typeof v === 'string') o[k] = str(v, 40); else continue; if (++n > 48) break }
   return o }
-function pub(s) { return { id: s.id, nm: s.nm, lv: s.lv, race: s.race, cls: s.cls, z: s.room, x: s.x, y: s.y, f: s.f, mv: s.mv, ps: s.ps, lk: s.lk, on: !!s.ws } }
+function pub(s) { return { id: s.id, nm: s.nm, lv: s.lv, race: s.race, cls: s.cls, z: s.room, x: s.x, y: s.y, f: s.f, mv: s.mv, ps: s.ps, lk: s.lk, on: !!s.ws, ...G.pubExtra(s) } }
 function roomOf(name) { let r = rooms.get(name); if (!r) { r = new Set(); rooms.set(name, r) } return r }
 function bcast(room, msg, except) { const r = rooms.get(room); if (!r) return; const data = JSON.stringify(msg); for (const s of r) if (s !== except && s.ws) s.ws.sendText(data) }
-function leaveRoom(s, why) { if (!s.room) return; const r = rooms.get(s.room); if (r) { r.delete(s); bcast(s.room, { t: 'pleave', id: s.id, why }); if (!r.size) rooms.delete(s.room) } s.room = null }
-function joinRoom(s, room) { if (s.room === room) return true; const r = roomOf(room); if (r.size >= ROOM_CAP) { if (!r.size) rooms.delete(room); return false } leaveRoom(s, 'move'); s.room = room; r.add(s);
-  s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: [...r].filter(o => o !== s).map(pub) })); bcast(room, { t: 'pjoin', p: pub(s) }, s); return true }
+function leaveRoom(s, why) { if (!s.room) return; const room = s.room, r = rooms.get(room); if (r) { r.delete(s); bcast(room, { t: 'pleave', id: s.id, why }); if (!r.size) rooms.delete(room) } s.room = null; G.onLeaveRoom(s, room) }
+function joinRoom(s, room) { if (s.room === room) { const r = rooms.get(room); s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: r ? [...r].filter(o => o !== s).map(pub) : [] })); G.onJoinRoom(s, room, true); return true } /* 같은 구역을 다시 불러온 경우: 목록을 다시 보내 맞춘다 */ const r = roomOf(room); if (r.size >= ROOM_CAP) { if (!r.size) rooms.delete(room); return false } leaveRoom(s, 'move'); s.room = room; r.add(s);
+  s.ws && s.ws.sendText(JSON.stringify({ t: 'room', room, players: [...r].filter(o => o !== s).map(pub) })); bcast(room, { t: 'pjoin', p: pub(s) }, s); G.onJoinRoom(s, room); return true }
 function counts() { let online = 0; for (const s of sessions.values()) if (s.ws) online++; return online }
 
 /* ------------------------------ 메시지 처리 ------------------------------ */
-const LIMITS = { st: [20, 1000], chat: [5, 6000], emote: [3, 3000], join: [6, 3000], hello: [3, 5000], ping: [10, 1000] };
+const LIMITS = Object.assign({ st: [20, 1000], chat: [5, 6000], emote: [3, 3000], join: [6, 3000], hello: [3, 5000], ping: [10, 1000] }, G.LIM);
 function rate(s, t) { const L = LIMITS[t] || [10, 1000], now = Date.now(), b = s.rl[t] || (s.rl[t] = { n: 0, t0: now }); if (now - b.t0 > L[1]) { b.n = 0; b.t0 = now } return ++b.n <= L[0] }
 function err(ws, code, msg) { ws.sendText(JSON.stringify({ t: 'err', code, msg })) }
 function onMessage(ws, raw) { let m; try { m = JSON.parse(raw) } catch (e) { return err(ws, 'bad_json', '형식이 잘못된 메시지') } if (!m || typeof m.t !== 'string') return err(ws, 'bad_msg', '종류가 없는 메시지');
@@ -45,11 +46,11 @@ function onMessage(ws, raw) { let m; try { m = JSON.parse(raw) } catch (e) { ret
     ss.nm = str(m.nm, 16) || '모험가'; ss.lv = num(m.lv, 1, 99) || 1; ss.race = str(m.race, 16) || 'human'; ss.cls = str(m.cls, 20); const lk = cleanLook(m.lk); if (lk) ss.lk = lk;
     ss.room = null; ss.moved = false;
     ws.sendText(JSON.stringify({ t: 'welcome', id: ss.id, resume: ss.token, online: counts(), serverTime: Date.now(), resumed: !!tok && ss.token === tok }));
-    log('hello', ss.id, ss.nm, tok ? '(resume)' : ''); return }
+    log('hello', ss.id, ss.nm, tok ? '(resume)' : ''); G.onHello(ss); return }
   if (!s) return err(ws, 'no_hello', '먼저 hello 를 보내야 한다');
   if (!rate(s, m.t)) return err(ws, 'rate', '너무 빠르다: ' + m.t);
   switch (m.t) {
-    case 'join': { const room = str(m.room, 40); if (!/^[a-z0-9_]{1,40}$/.test(room)) return err(ws, 'bad_room', '룸 이름이 잘못됨'); const x = num(m.x, 0, 400), y = num(m.y, 0, 400); if (x !== null) s.x = x; if (y !== null) s.y = y; if (!joinRoom(s, room)) err(ws, 'room_full', '룸이 가득 찼다'); return }
+    case 'join': { const room = str(m.room, 40); if (!/^[a-z0-9_]{1,40}$/.test(room)) return err(ws, 'bad_room', '룸 이름이 잘못됨'); const x = num(m.x, 0, 400), y = num(m.y, 0, 400); if (x !== null) s.x = x; if (y !== null) s.y = y; s.moved = false; if (!joinRoom(s, room)) err(ws, 'room_full', '룸이 가득 찼다'); return }
     case 'st': { if (!s.room) return; const x = num(m.x, 0, 400), y = num(m.y, 0, 400); if (x === null || y === null) return err(ws, 'bad_st', '좌표가 잘못됨');
       // 순간이동 막기: 한 번에 6칸 넘게 움직이면(구역 안 이동 기준) 받아들이지 않고 서버 위치를 돌려준다
       if (Math.hypot(x - s.x, y - s.y) > 6 && s.moved) { ws.sendText(JSON.stringify({ t: 'fix', x: s.x, y: s.y })); return }
@@ -63,13 +64,13 @@ function onMessage(ws, raw) { let m; try { m = JSON.parse(raw) } catch (e) { ret
     case 'emote': { const k = str(m.k, 12); if (!EMOTES.has(k) || !s.room) return err(ws, 'bad_emote', '없는 감정 표현'); bcast(s.room, { t: 'emote', id: s.id, k, ts: Date.now() }); return }
     case 'ping': ws.sendText(JSON.stringify({ t: 'pong', ts: m.ts, online: counts() })); return;
     case 'act': return err(ws, 'not_implemented', '전투·아이템은 아직 서버에서 처리하지 않는다');
-    default: return err(ws, 'unknown', '모르는 메시지: ' + str(m.t, 16)) } }
-function onClose(ws) { const s = ws.sess; if (!s || s.ws !== ws) return; s.ws = null; leaveRoom(s, 'disconnect');
+    default: if (G.handle(s, m)) return; return err(ws, 'unknown', '모르는 메시지: ' + str(m.t, 16)) } }
+function onClose(ws) { const s = ws.sess; if (!s || s.ws !== ws) return; s.ws = null; leaveRoom(s, 'disconnect'); G.onDisconnect(s);
   // 재접속 대기: 같은 토큰으로 돌아오면 같은 ID 를 쓴다
-  s.gone = setTimeout(() => { sessions.delete(s.id) }, RESUME_MS); log('close', s.id, s.nm) }
+  s.gone = setTimeout(() => { G.onGone(s); sessions.delete(s.id) }, RESUME_MS); log('close', s.id, s.nm) }
 
 /* ------------------------------ WebSocket (RFC 6455) ------------------------------ */
-const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', MAX_FRAME = 8192;
+const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', MAX_FRAME = 32768;
 function wrap(sock) { const ws = { sock, buf: Buffer.alloc(0), alive: true, closed: false, sess: null, frags: [] };
   ws.send = (op, payload) => { if (ws.closed) return; const len = payload.length; let head; if (len < 126) { head = Buffer.alloc(2); head[1] = len } else if (len < 65536) { head = Buffer.alloc(4); head[1] = 126; head.writeUInt16BE(len, 2) } else { head = Buffer.alloc(10); head[1] = 127; head.writeBigUInt64BE(BigInt(len), 2) } head[0] = 0x80 | op; try { sock.write(Buffer.concat([head, payload])) } catch (e) { } };
   ws.sendText = t => ws.send(1, Buffer.from(t));
@@ -104,5 +105,6 @@ server.on('upgrade', (req, sock) => { const u = new URL(req.url, 'http://x'), ke
   const ws = wrap(sock); conns.add(ws); sock.on('close', () => conns.delete(ws)) });
 /* 끊김 감지: 15초마다 ping, 응답(또는 아무 메시지)이 없으면 연결을 끊는다 */
 setInterval(() => { for (const ws of conns) { if (!ws.alive) { try { ws.sock.destroy() } catch (e) { } continue } ws.alive = false; ws.send(9, Buffer.alloc(0)) } }, 15000);
+G.init({ sessions, rooms, bcast, str, num, log });
 server.listen(PORT, () => log(`FROSTBOUND server on :${PORT}  (origins: ${ALLOWED.length ? ALLOWED.join(',') : 'any'})`));
 process.on('SIGTERM', () => { for (const ws of conns) ws.close(1012, 'restart'); server.close(); setTimeout(() => process.exit(0), 500) });
